@@ -385,7 +385,7 @@ cdef class Listener:
     def __bool__(self) -> bool:
         return <boolean> self.impl
 
-    def gain(self, value: float) -> None:
+    def set_gain(self, value: float) -> None:
         self.impl.set_gain(value)
 
     def set_position(self, value: Vector3) -> None:
@@ -399,12 +399,34 @@ cdef class Listener:
         self.impl.set_orientation(
             pair[alure.Vector3, alure.Vector3](to_vector3(at), to_vector3(up)))
 
-    position = property(fset=set_position, doc='3D position of the source.')
-    velocity = property(fset=set_velocity)
-    orientation = property(fset=set_orientation)
+    def set_meters_per_unit(self, value: float) -> None:
+        self.impl.set_meters_per_unit(value)    
 
-    #TODO:
-    # set_meters_per_unit
+    gain = property(fset=set_gain, doc='Master gain for all context output.')
+    position = property(fset=set_position, doc='3D position of the listener.')
+    velocity = property(
+        fset=set_velocity
+        doc=(
+            """3D velocity of the listener, in units per second. As with
+            OpenAL, this does not actually alter the listener's position, and
+            instead just alters the pitch as determined by the doppler effect.
+            """))
+    orientation = property(
+        fset=set_orientation
+        doc=(
+            """3D orientation of the listener, using position-relative 'at'
+            and 'up' direction vectors.
+            """))
+    meters_per_unit = property(
+        fset=set_meters_per_unit
+        doc=(
+            """Number of meters per unit, used for various effects that rely
+            on the distance in meters including air absorption and initial reverb
+            decay. If this is changed, it's strongly recommended to also set the
+            speed of sound (e.g. context.setSpeedOfSound(343.3 / m_u) to maintain a
+            realistic 343.3m/s for sound propagation).
+            """))
+
 
 cdef class Buffer:
     """Buffer of preloaded PCM samples coming from a `Decoder`.
@@ -726,7 +748,9 @@ cdef class Source:
         This is effectively a distance scaling relative to
         the reference distance.
 
-        Note: to disable distance attenuation for send paths,
+        Notes
+        -----
+        To disable distance attenuation for send paths,
         set room factor to 0.  The reverb engine will, by default,
         apply a more realistic room decay based on the reverb decay
         time and distance.
@@ -863,6 +887,79 @@ cdef class Source:
         """Destroy the source, stop playback and release resources."""
         self.impl.destroy()
 
+
+cdef class SourceGroup:
+    cdef alure.SourceGroup impl
+
+    def __init__(self, context: Context = None) -> None:
+        if context is None: return
+        self.impl = context.impl.create_source_group()
+
+    def __enter__(self) -> SourceGroup:
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+        self.destroy()
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl < other_source_group.impl
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl <= other_source_group.impl
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl == other_source_group.impl
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl != other_source_group.impl
+
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl > other_source_group.impl
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        other_source_group: SourceGroup = other
+        return self.impl >= other_source_group.impl
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl
+    
+    @property
+    def parent_group(self) -> SourceGroup:
+        """The source group this source group is a child of.
+
+        Raises
+        ------
+        RuntimeException
+            If this group is being added to its sub-group
+            (i.e. it would create a circular sub-group chain).
+        """
+        source_group: SourceGroup = SourceGroup()
+        source_group.impl = self.impl.get_parent_group()
+        return source_group
+
+    @parent_group.setter
+    def parent_group(self, value: SourceGroup) -> None:
+        self.impl.set_parent_group(value.impl)
+    
 
 cdef class Decoder:
     """Audio decoder interface.

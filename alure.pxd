@@ -489,6 +489,26 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
 
 
     cdef cppclass SourceGroup:
+        ctypedef SourceImpl* handle_type
+
+        SourceGroup()
+        SourceGroup(SourceGroupImpl*)
+        SourceGroup(const SourceGroup&)
+        SourceGroup(SourceGroup&&)
+
+        SourceGroup& operator=(const SourceGroup&)
+        SourceGroup& operator=(SourceGroup&&)
+
+        boolean operator==(const SourceGroup&)
+        boolean operator!=(const SourceGroup&)
+        boolean operator<=(const SourceGroup&)
+        boolean operator>=(const SourceGroup&)
+        boolean operator<(const SourceGroup&)
+        boolean operator>(const SourceGroup&)
+
+        boolean operator bool()
+
+        handle_type get_handle 'getHandle'()
         void set_parent_group 'setParentGroup'(SourceGroup) except +
         SourceGroup get_parent_group 'getParentGroup'() except +
 
