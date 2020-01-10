@@ -302,7 +302,20 @@ cdef class Device:
         """
         self.impl.resume_dsp()
 
-    # TODO: get clock time
+    @property
+    def clock_time(self) -> int:
+        """Current clock time for the device.
+        This starts relative to the device being opened,
+        and does not increment while there are no
+        contexts nor while processing is paused.
+        This is currently based on std::chrono::steady_clock,
+        and so may not exactly match the rate that
+        sources play at.
+        In the future it may utilize an OpenAL extension to retrieve
+        the audio device's real clock which may tic at a subtly
+        different rate than the main clock(s).
+        """
+        return self.impl.get_clock_time()
 
     def close(self) -> None:
         """Close and free the device.  All previously-created contexts
@@ -486,7 +499,28 @@ cdef class Source:
         """
         self.impl.stop()
 
-    # TODO: fade out to stop
+    def fade_out_to_stop(self) -> None:
+        """Fade the source to the specified gain over the given duration, at which
+        point playback will stop.
+
+        This gain is in addition to the base gain, and
+        must be greater than 0 and less than 1. The duration must also be
+        greater than 0.
+
+        The fading is logarithmic. As a result, the initial drop-off may happen
+        faster than expected but the fading is more perceptually consistant over
+        the given duration. It will take just as much time to go from -6dB to
+        -12dB as it will to go from -40dB to -46dB, for example.
+
+        Pending playback from a future buffer is not immediately canceled, but
+        the fade timer starts with this call. If the future buffer then becomes
+        ready, it will start mid-fade. Pending playback will be canceled if the
+        fade out completes before the future buffer becomes ready.
+
+        Fading is updated during calls to \c Context::update, which should be
+        called regularly (30 to 50 times per second) for the fading to be
+        smooth.
+        """
 
     def pause(self) -> None:
         """Pause the source if it is playing."""
@@ -543,8 +577,17 @@ cdef class Source:
     def offset(self, value: int) -> None:
         self.impl.set_offset(value)
 
-    # TODO: sample latency
-    # TODO: sec offset and latency
+    @property
+    def sample_latency(self) -> int:
+        return self.impl.get_sample_offset_latency()[1]
+
+    @property
+    def sec_offset(self):
+        return self.impl.get_sec_offset()
+
+    @property
+    def sec_latency(self):
+        return self.impl.get_sample_offset_latency()[1]
 
     @property
     def looping(self) -> bool:

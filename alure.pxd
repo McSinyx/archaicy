@@ -24,6 +24,16 @@ from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
 
+# std::chrono wrapper
+cdef extern from '<chrono>' namespace 'std' nogil:
+    cdef int nanoseconds
+    cdef int microseconds
+    cdef int milliseconds
+    cdef int seconds
+    cdef int minute
+    cdef int hour
+
+
 cdef extern from '<future>' namespace 'std' nogil:
     cdef cppclass shared_future[R]:
         pass
@@ -194,7 +204,7 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         void pause_dsp 'pauseDSP'() except +
         void resume_dsp 'resumeDSP'() except +
 
-        # get_clock_time
+        nanoseconds get_clock_time 'getClockTime'() except +
 
         void close() except +
 
@@ -243,8 +253,8 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         shared_ptr[MessageHandler] set_message_handler 'setMessageHandler'(shared_ptr[MessageHandler]) except +
         shared_ptr[MessageHandler] get_message_handler 'getMessageHandler'() except +
 
-        # set_async_wake_interval
-        # get_async_wake_interval
+        void set_async_wake_interval 'setAsyncWakeInterval'(milliseconds) except +
+        milliseconds get_async_wake_interval 'getAsyncWakeInterval'() except +
 
         shared_ptr[Decoder] create_decoder 'createDecoder'(string) except +
 
@@ -344,7 +354,7 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         void play(shared_future[Buffer]) except +
 
         void stop() except +
-        # fade_out_to_stop
+        void fade_out_to_stop 'fadeOutToStop'(float, milliseconds) except +
         void pause() except +
         void resume() except +
 
@@ -360,10 +370,10 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         unsigned get_priority 'getPriority'() except +
 
         void set_offset 'setOffset'(uint64_t) except +
-        # get_sample_offset_latency
+        pair[uint64_t, nanoseconds] get_sample_offset_latency 'getSampleOffsetLatency'() except +
         uint64_t get_sample_offset 'getSampleOffset'() except +
-        # get_sec_offset_latency
-        # get_sec_offset
+        pair[seconds, seconds] get_sec_offset_latency 'getSecOffsetLatency'() except +
+        seconds get_sec_offset 'getSecOffset'() except +
 
         void set_looping 'setLooping'(boolean) except +
         boolean get_looping 'getLooping'() except +
@@ -442,7 +452,7 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         float get_air_absorption_factor 'getAirAbsorptionFactor'() except +
 
         void set_gain_auto 'setGainAuto'(boolean, boolean, boolean) except +
-        # get_gain_auto
+        tuple[bool, bool, bool] get_gain_auto() except +
         boolean get_direct_gain_hf_auto 'getDirectGainHFAuto'() except +
         boolean get_send_gain_auto 'getSendGainAuto'() except +
         boolean get_send_gain_hf_auto 'getSendGainHFAuto'() except +
