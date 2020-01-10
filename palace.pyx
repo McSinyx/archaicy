@@ -579,14 +579,27 @@ cdef class Source:
 
     @property
     def sample_latency(self) -> int:
+        """The source offset in sample frames and its latency in nanoseconds.
+
+        If the AL_SOFT_source_latency extension is unsupported, the latency will
+        be 0.
+        """
         return self.impl.get_sample_offset_latency()[1]
 
     @property
     def sec_offset(self):
+        """The source offset in seconds. For streaming
+        sources this will be the offset based on the decoder's read position.
+        """
         return self.impl.get_sec_offset()
 
     @property
     def sec_latency(self):
+        """The source latency in seconds.
+
+        If the AL_SOFT_source_latency extension is unsupported, the latency will
+        be 0.
+        """
         return self.impl.get_sample_offset_latency()[1]
 
     @property
