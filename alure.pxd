@@ -280,7 +280,40 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
 
 
     cdef cppclass Listener:
-        pass
+        ctypedef ListenerImpl* handle_type
+
+        Listener()
+        Listener(ListenerImpl*)
+        Listener(const Listener&)
+        Listener(Listener&&)
+
+        Listener& operator=(const Listener&)
+        Listener& operator=(Listener&&)
+
+        boolean operator==(const Listener&)
+        boolean operator!=(const Listener&)
+        boolean operator<=(const Listener&)
+        boolean operator>=(const Listener&)
+        boolean operator<(const Listener&)
+        boolean operator>(const Listener&)
+
+        boolean operator bool()
+
+        handle_type get_handle 'getHandle'()        
+
+        float set_gain 'setGain'(float) except +
+        float set_3d_parameters 'set3DParameters'(const Vector3&, const Vector3&, const Vector3&) except +
+        void set_position 'setPosition'(const Vector3 &) except +
+        void set_position 'setPosition'(const float*) except +
+
+        void set_velocity 'setVelocity'(const Vector3&) except +
+        void set_velocity 'setVelocity'(const float*) except +
+
+        void set_orientation 'setOrientation'(const pair[Vector3, Vector3]&) except +
+        void set_orientation 'setOrientation'(const float*, const float*) except +
+        void set_orientation 'setOrientation'(const float*) except +
+
+        void set_meters_per_unit 'setMetersPerUnit'(float) except +
 
 
     cdef cppclass Buffer:
@@ -456,7 +489,23 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
 
 
     cdef cppclass SourceGroup:
-        pass
+        void set_parent_group 'setParentGroup'(SourceGroup) except +
+        SourceGroup get_parent_group 'getParentGroup'() except +
+
+        vector[Source] get_sources 'getSources'() except +
+        vector[SourceGroup] get_sub_groups 'getSubGroups'() except +
+
+        void set_gain 'setGain'(float) except +
+        float get_gain 'getGain'() except +
+
+        void set_pitch 'setPitch'() except +
+        float get_pitch 'getPitch'() except +
+
+        void pause_all 'pauseAll'() except +
+        void resume_all 'resumeAll'() except +
+        void stop_all 'stopAll'() except +
+        
+        void destroy() except +
 
 
     cdef cppclass AuxiliaryEffectSlot:

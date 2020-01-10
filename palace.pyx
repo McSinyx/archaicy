@@ -96,7 +96,7 @@ def query_extension(name: str) -> bool:
 
     See Also
     --------
-    Device.query_extension : Query ALC extension on a device
+    Device.query_extension : Query device-specific ALC extension
     """
     return devmgr.query_extension(name)
 
@@ -348,10 +348,12 @@ cdef class Context:
     """
     cdef alure.Context impl
     cdef readonly Device device
+    cdef readonly Listener listener
 
     def __init__(self, device: Device, attrs: Dict[int, int] = {}) -> None:
         self.impl = device.impl.create_context(mkattrs(attrs.items()))
         self.device = device
+        self.listener = Listener(self)
 
     def __enter__(self) -> Context:
         use_context(self)
@@ -373,6 +375,36 @@ cdef class Context:
         """Update the context and all sources belonging to this context."""
         self.impl.update()
 
+
+cdef class Listener:
+    cdef alure.Listener impl
+
+    def __init__(self, context: Context) -> None:
+        self.impl = context.impl.get_listener()
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl        
+
+    def gain(self, value: float) -> None:
+        self.impl.set_gain(value)
+
+    def set_position(self, value: Vector3) -> None:
+        self.impl.set_position(to_vector3(value))
+
+    def set_velocity(self, value: Vector3) -> None:
+        self.impl.set_velocity(to_vector3(value))
+
+    def set_orientation(self, value: Tuple[Vector3, Vector3]) -> None:
+        at, up = value
+        self.impl.set_orientation(
+            pair[alure.Vector3, alure.Vector3](to_vector3(at), to_vector3(up)))
+
+    position = property(fset=set_position, doc='3D position of the source.')
+    velocity = property(fset=set_velocity)
+    orientation = property(fset=set_orientation)
+
+    #TODO:
+    # set_meters_per_unit
 
 cdef class Buffer:
     """Buffer of preloaded PCM samples coming from a `Decoder`.
@@ -773,12 +805,9 @@ cdef class Source:
 
     @spatialize.setter
     def spatialize(self, value: Optional[bool]) -> None:
-        if value is None:
-            self.impl.set_3d_spatialize(alure.Spatialize.Auto)
-        elif value:
-            self.impl.set_3d_spatialize(alure.Spatialize.On)
-        else:
-            self.impl.set_3d_spatialize(alure.Spatialize.Off)
+        if value is None: self.impl.set_3d_spatialize(alure.Spatialize.Auto)
+        if value: self.impl.set_3d_spatialize(alure.Spatialize.On)
+        self.impl.set_3d_spatialize(alure.Spatialize.Off)
 
     @property
     def resampler_index(self) -> int:
