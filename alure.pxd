@@ -518,7 +518,7 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         void set_gain 'setGain'(float) except +
         float get_gain 'getGain'() except +
 
-        void set_pitch 'setPitch'() except +
+        void set_pitch 'setPitch'(float) except +
         float get_pitch 'getPitch'() except +
 
         void pause_all 'pauseAll'() except +

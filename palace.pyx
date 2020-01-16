@@ -377,6 +377,13 @@ cdef class Context:
 
 
 cdef class Listener:
+    """Instance listener of the context, i.e each context will only have one listener
+
+    Parameters
+    ----------
+    context : Context
+        The `context` on which the listener instance is to be created
+    """
     cdef alure.Listener impl
 
     def __init__(self, context: Context) -> None:
@@ -405,26 +412,26 @@ cdef class Listener:
     gain = property(fset=set_gain, doc='Master gain for all context output.')
     position = property(fset=set_position, doc='3D position of the listener.')
     velocity = property(
-        fset=set_velocity
+        fset=set_velocity,
         doc=(
             """3D velocity of the listener, in units per second. As with
             OpenAL, this does not actually alter the listener's position, and
             instead just alters the pitch as determined by the doppler effect.
             """))
     orientation = property(
-        fset=set_orientation
+        fset=set_orientation,
         doc=(
-            """3D orientation of the listener, using position-relative 'at'
-            and 'up' direction vectors.
+            """3D orientation of the listener, using position-relative `at`
+            and `up` direction vectors.
             """))
     meters_per_unit = property(
-        fset=set_meters_per_unit
+        fset=set_meters_per_unit,
         doc=(
             """Number of meters per unit, used for various effects that rely
             on the distance in meters including air absorption and initial reverb
             decay. If this is changed, it's strongly recommended to also set the
-            speed of sound (e.g. context.setSpeedOfSound(343.3 / m_u) to maintain a
-            realistic 343.3m/s for sound propagation).
+            speed of sound (e.g. context.set_speed_of_sound (343.3 / meters_per_unit) to maintain a
+            realistic 343.3 m/s for sound propagation).
             """))
 
 
@@ -516,13 +523,15 @@ cdef class Source:
 
     Parameters
     ----------
-    context : Context
+    context : Optional[Context]
         The context from which the source is to be created.
+        If it is None, `__init__` does nothing. 
     """
     cdef alure.Source impl
 
-    def __init__(self, context: Context) -> None:
-        self.impl = context.impl.create_source()
+    def __init__(self, context: Optional[Context]) -> None:
+        if context is None: return
+        self.impl = (<Context> context).impl.create_source()
 
     def __enter__(self) -> Source:
         return self
@@ -889,11 +898,20 @@ cdef class Source:
 
 
 cdef class SourceGroup:
+    """A group of Source references. For instance, setting SourceGroup's gain to 0.5
+    will halve the gain of all source in group"""
+
+    Parameters
+    ----------
+    context : Optional[Context]
+        The context from which the source group is to be created.
+        If it is None, `__init__` does nothing. 
+    """
     cdef alure.SourceGroup impl
 
-    def __init__(self, context: Context = None) -> None:
+    def __init__(self, context: Optional[Context]) -> None:
         if context is None: return
-        self.impl = context.impl.create_source_group()
+        self.impl = (<Context> context).impl.create_source_group()
 
     def __enter__(self) -> SourceGroup:
         return self
@@ -952,13 +970,62 @@ cdef class SourceGroup:
             If this group is being added to its sub-group
             (i.e. it would create a circular sub-group chain).
         """
-        source_group: SourceGroup = SourceGroup()
+        source_group: SourceGroup = SourceGroup(None)
         source_group.impl = self.impl.get_parent_group()
         return source_group
 
     @parent_group.setter
     def parent_group(self, value: SourceGroup) -> None:
         self.impl.set_parent_group(value.impl)
+    
+    @property
+    def gain(self) -> float:
+        """Source group gain, accumulates with its sources' and
+        sub-groups' gain."""
+        return self.impl.get_gain()
+
+    @gain.setter
+    def gain(self, value: float) -> None:
+        self.impl.set_gain(value)
+
+    @property
+    def pitch(self) -> float:
+        """Source group pitch, accumulates with its sources' and
+        sub-groups' pitch."""
+        return self.impl.get_pitch()
+
+    @pitch.setter
+    def pitch(self, value: float) -> None:
+        self.impl.set_pitch(value)
+
+    @property
+    def sources(self) -> List[Source]:
+        """The list of sources currently in the group."""
+        sources = []
+        for alure_source in self.impl.get_sources():
+            source = Source(None)
+            source.impl = alure_source
+            sources.append(source)
+        return sources
+
+    @property
+    def sub_groups(self) -> List[SourceGroup]:
+        """The list of subgroups currently in the group"""
+        source_groups = []
+        for alure_source_group in self.impl.get_sub_groups():
+            source_group = SourceGroup(None)
+            source_group.impl = alure_source_group
+            source_groups.append(source_group)
+        return source_groups
+
+    def pause_all(self) -> None:
+        self.impl.pause_all()
+
+    def resume_all(self) -> None:
+        self.impl.resume_all()
+
+    def stop_all(self) -> None:
+        self.impl.stop_all()
     
 
 cdef class Decoder:
