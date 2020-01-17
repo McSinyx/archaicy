@@ -377,12 +377,12 @@ cdef class Context:
 
 
 cdef class Listener:
-    """Instance listener of the context, i.e each context will only have one listener
+    """Listener instance of the context, i.e each context will only have one listener.
 
     Parameters
     ----------
     context : Context
-        The `context` on which the listener instance is to be created
+        The `context` on which the listener instance is to be created.
     """
     cdef alure.Listener impl
 
@@ -980,7 +980,7 @@ cdef class SourceGroup:
     
     @property
     def gain(self) -> float:
-        """Source group gain, accumulates with its sources' and
+        """Source group gain, accumulating with its sources' and
         sub-groups' gain."""
         return self.impl.get_gain()
 
@@ -1010,7 +1010,7 @@ cdef class SourceGroup:
 
     @property
     def sub_groups(self) -> List[SourceGroup]:
-        """The list of subgroups currently in the group"""
+        """The list of subgroups currently in the group."""
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
             source_group = SourceGroup(None)
@@ -1019,12 +1019,21 @@ cdef class SourceGroup:
         return source_groups
 
     def pause_all(self) -> None:
+        """Pause all currently-playing sources that are under
+        this group, including sub-groups.
+        """
         self.impl.pause_all()
 
     def resume_all(self) -> None:
+        """Resume all paused sources that are under this group,
+        including sub-groups.
+        """
         self.impl.resume_all()
 
     def stop_all(self) -> None:
+        """Stop all sources that are under this group,
+        including sub-groups.
+        """
         self.impl.stop_all()
     
 
