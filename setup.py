@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from Cython.Build import cythonize
-from setuptools import setup, Extension
+from setuptools import Extension
+from skbuild import setup
 
 with open('README.md') as f:
     long_description = f.read()
 
 setup(
     name='palace',
-    version='0.0.2',
+    version='0.0.3',
     description='Pythonic Audio Library and Codecs Environment',
     long_description=long_description,
     long_description_content_type='text/markdown',
