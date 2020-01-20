@@ -546,7 +546,16 @@ cdef extern from '<alure2.h>' namespace 'alure' nogil:
         void destroy() except +
 
     cdef cppclass AuxiliaryEffectSlot:
-        pass
+        ctypedef SourceImpl* handle_type
+        void set_gain 'setGain'(float) except +
+        void set_send_auto 'setSendAuto'(bool) except +
+        void apply_effect 'applyEffect'(Effect) except +
+        void destroy() except +
+
+        vector[SourceSend] get_source_sends 'getSourceSends'() except +
+        size_t get_use_count 'getUseCount'() except +
+
+
 
     cdef cppclass Effect:
         pass
