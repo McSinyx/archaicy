@@ -1158,7 +1158,7 @@ cdef class SourceGroup:
         """
         self.impl.destroy()
 
-
+
 cdef class AuxiliaryEffectSlot:
     """ TODO: Write docstring """
     cdef alure.AuxiliaryEffectSlot impl
@@ -1168,7 +1168,7 @@ cdef class AuxiliaryEffectSlot:
 
     # TODO: Implement AuxiliaryEffectSlot
 
-
+
 cdef class Decoder:
     """Audio decoder interface.
 
