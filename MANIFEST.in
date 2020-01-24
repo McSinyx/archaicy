@@ -1,1 +1,1 @@
-include LICENSE pyproject.toml alure.pxd palace.pyx
+include LICENSE CMakeLists.txt cmake/*.cmake alure.pxd palace.pyx
