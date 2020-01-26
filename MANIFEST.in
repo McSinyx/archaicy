@@ -1,1 +1,2 @@
-include LICENSE CMakeLists.txt cmake/*.cmake alure.pxd palace.pyx
+include alure.pxd palace.pyx CMakeLists.txt
+graft cmake

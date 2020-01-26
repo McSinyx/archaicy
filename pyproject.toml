@@ -1,3 +1,3 @@
 [build-system]
-# Minimum requirements for the build system to execute.
-requires = ['setuptools', 'wheel', 'cython', 'cmake']
+requires = ['setuptools>=43', 'wheel>=0.31', 'Cython', 'cmake']
+build-backend = "setuptools.build_meta"
