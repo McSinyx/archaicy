@@ -1160,7 +1160,17 @@ cdef class SourceGroup:
 
 
 cdef class AuxiliaryEffectSlot:
-    """ TODO: Write docstring """
+    """An effect processor.
+
+    It takes the output mix of zero or more sources, applies DSP for the desired effect
+    (as configured by a given Effect object), then adds to the output mix.
+
+    Parameters
+    ----------
+    context : Optional[Context]
+        The context from which the auxiliary effect slot is to be created.
+        If it is `None`, the object is left uninitialized.
+    """
     cdef alure.AuxiliaryEffectSlot impl
 
     def __init__(self, context: Optional[Context]) -> None:
@@ -1209,16 +1219,29 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
-        """"""
+        """If set to true, the reverb effect will automatically apply adjustments
+        to the source's send slot gains based on the effect properties.
+
+        Has no effect when using non-reverb effects. Default is true.
+        """
         return self.impl.set_gain()
 
     def set_send_auto(self, sendauto: bool) -> None:
+        """Update the effect slot with a new effect. The given effect object may
+        be altered or destroyed without affecting the effect slot.
+        """
         return self.impl.set_send_auto()
 
     def apply_effect(self, effect: Effect) -> None:
+        """Destroy the effect slot, returning it to the system. If the effect slot
+        is currently set on a source send, it will be removed first.
+        """
         return self.impl.apply_effect()
 
     def destroy(self) -> None:
+        """Retrieve each Source object and its pairing send this effect slot is
+        equivalent to calling `getSourceSends().size()`.
+        """
         return self.impl.destroy()
 
     @property
