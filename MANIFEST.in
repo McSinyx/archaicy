@@ -1,3 +1,2 @@
-include LICENSE
-include alure.pxd
-include palace.pyx
+include alure.pxd palace.pyx CMakeLists.txt
+graft cmake

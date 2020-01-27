@@ -1,3 +1,5 @@
+# cython: language_level=3str, c_string_type=str, c_string_encoding=utf8
+# cython: binding=False, embedsignature=True
 # Python object wrappers for alure
 # Copyright (C) 2019, 2020  Nguyễn Gia Phong
 # Copyright (C) 2020  Ngô Ngọc Đức Huy

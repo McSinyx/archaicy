@@ -1,41 +1,36 @@
 #!/usr/bin/env python3
-from Cython.Build import cythonize
-from setuptools import Extension
-from skbuild import setup
+from distutils.file_util import copy_file
+from distutils.dir_util import mkpath
+from glob import iglob
+from itertools import chain
+from os.path import abspath, dirname, join
+from platform import python_version
+from subprocess import check_call
 
-with open('README.md') as f:
-    long_description = f.read()
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 
-setup(
-    name='palace',
-    version='0.0.3',
-    description='Pythonic Audio Library and Codecs Environment',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    url='https://github.com/McSinyx/palace',
-    author='Nguyễn Gia Phong',
-    author_email='vn.mcsinyx@gmail.com',
-    license='LGPLv3+',
-    classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: C++',
-        'Programming Language :: Cython',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Multimedia :: Sound/Audio',
-        'Topic :: Software Development :: Libraries',
-        'Typing :: Typed'],
-    keywords='openal alure hrtf',
-    ext_modules=cythonize(
-        Extension('palace', ['palace.pyx'],
-                  include_dirs=['/usr/include/AL/'],
-                  libraries=['alure2'], language='c++'),
-        compiler_directives=dict(
-            binding=False, embedsignature=True, language_level='3str',
-            c_string_type='str', c_string_encoding='utf8')),
-    zip_safe=False)
+
+class cmake_ext(build_ext):
+    """Build extension using CMake."""
+    def run(self) -> None:
+        """Use CMake to build the extension in build_temp
+        and copy it to build_lib for installation.
+        """
+        # Use CMake to build the extension in build_temp
+        mkpath(self.build_temp)
+        print('generating build system in', self.build_temp)
+        check_call(['cmake', f'-DPYTHON_VERSION={python_version()}',
+                    f'-S{dirname(abspath(__file__))}', f'-B{self.build_temp}'])
+        print('building extension in', self.build_temp)
+        check_call(['cmake', '--build', self.build_temp])
+
+        # Copy the extension to build_lib for installation
+        mkpath(self.build_lib)
+        for ext in chain.from_iterable(iglob(join(self.build_temp, libpattern))
+                                       for libpattern in ('*.so', '*.dll')):
+            copy_file(ext, self.build_lib)
+
+
+# Compilation is handled by CMake, thus no source file is passed to Extension.
+setup(ext_modules=[Extension('palace', [])], cmdclass={'build_ext': cmake_ext})

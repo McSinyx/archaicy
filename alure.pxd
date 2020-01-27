@@ -51,22 +51,22 @@ cdef extern from '<ratio>' namespace 'std' nogil:
 
 
 # OpenAL and Alure auxiliary declarations
-cdef extern from '<alc.h>' nogil:
+cdef extern from 'alc.h' nogil:
     cdef int ALC_FALSE
     cdef int ALC_TRUE
 
 
-cdef extern from '<alure2-alext.h>' nogil:
+cdef extern from 'alure2-alext.h' nogil:
     cdef int ALC_HRTF_SOFT
     cdef int ALC_HRTF_ID_SOFT
 
 
-cdef extern from '<alure2-aliases.h>' namespace 'alure' nogil:
+cdef extern from 'alure2-aliases.h' namespace 'alure' nogil:
     ctypedef duration[double] Seconds
 
 
 # Alure main module
-cdef extern from '<alure2.h>' namespace 'alure' nogil:
+cdef extern from 'alure2.h' namespace 'alure' nogil:
     # Type aliases:
     # char*: string
     # ALfloat: float
