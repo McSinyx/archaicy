@@ -1005,7 +1005,9 @@ cdef class Source:
 
     # TODO: set direct filter
     # TODO: set send filter
-    # TODO: set auxiliary send
+    def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
+        """Connect the effect slot to the given send path, using the filter properties"""
+        self.impl.set_auxiliary_send()
     # TODO: set auxiliary send filter
 
     def destroy(self) -> None:
