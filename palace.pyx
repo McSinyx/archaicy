@@ -1163,10 +1163,71 @@ cdef class AuxiliaryEffectSlot:
     """ TODO: Write docstring """
     cdef alure.AuxiliaryEffectSlot impl
 
-    def __init__(self, context: Context):
-        pass
+    def __init__(self, context: Optional[Context]) -> None:
+        if context is None: return
+        self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
 
-    # TODO: Implement AuxiliaryEffectSlot
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+        self.destroy()
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl < (<SourceGroup> other).impl
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl <= (<SourceGroup> other).impl
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl == (<SourceGroup> other).impl
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl != (<SourceGroup> other).impl
+
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl > (<SourceGroup> other).impl
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl >= (<SourceGroup> other).impl
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl
+
+    def set_gain(self, gain: float) -> None:
+        """"""
+        return self.impl.set_gain()
+
+    def set_send_auto(self, sendauto: bool) -> None:
+        return self.impl.set_send_auto()
+
+    def apply_effect(self, effect: Effect) -> None:
+        return self.impl.apply_effect()
+
+    def destroy(self) -> None:
+        return self.impl.destroy()
+
+    @property
+    def source_sends(self) -> vector[SourceSend]:
+        return self.impl.get_source_sends()
+
+    @@property
+    def use_count(self):
+        return self.impl.get_use_count()
 
 
 cdef class Decoder:

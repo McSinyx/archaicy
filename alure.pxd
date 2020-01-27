@@ -547,6 +547,26 @@ cdef extern from '<alure2.h>' namespace 'alure' nogil:
 
     cdef cppclass AuxiliaryEffectSlot:
         ctypedef SourceImpl* handle_type
+
+        Source()    # nil
+        Source(SourceImpl*)
+        Source(const Source&)
+        Source(Source&&)
+
+        Source& operator=(const Source&)
+        Source& operator=(Source&&)
+
+        boolean operator==(const Source&)
+        boolean operator!=(const Source&)
+        boolean operator<=(const Source&)
+        boolean operator>=(const Source&)
+        boolean operator<(const Source&)
+        boolean operator>(const Source&)
+
+        boolean operator bool()
+
+        handle_type get_handle 'getHandle'()
+
         void set_gain 'setGain'(float) except +
         void set_send_auto 'setSendAuto'(bool) except +
         void apply_effect 'applyEffect'(Effect) except +
@@ -554,8 +574,6 @@ cdef extern from '<alure2.h>' namespace 'alure' nogil:
 
         vector[SourceSend] get_source_sends 'getSourceSends'() except +
         size_t get_use_count 'getUseCount'() except +
-
-
 
     cdef cppclass Effect:
         pass
