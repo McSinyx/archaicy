@@ -509,6 +509,7 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
         boolean operator bool()
 
         handle_type get_handle 'getHandle'()
+
         void set_parent_group 'setParentGroup'(SourceGroup) except +
         SourceGroup get_parent_group 'getParentGroup'() except +
 
@@ -533,8 +534,32 @@ cdef extern from '<AL/alure2.h>' namespace 'alure' nogil:
 
 
     cdef cppclass Effect:
-        pass
+        ctypedef EffectImpl* handle_type
 
+        Effect()
+        Effect(EffectImpl*)
+        Effect(const Effect&)
+        Effect(Effect&&)
+
+        Effect& operator=(const Effect&)
+        Effect& operator=(Effect&&)
+
+        boolean operator==(const Effect&)
+        boolean operator!=(const Effect&)
+        boolean operator<=(const Effect&)
+        boolean operator>=(const Effect&)
+        boolean operator<(const Effect&)
+        boolean operator>(const Effect&)
+
+        boolean operator bool()
+
+        handle_type get_handle 'getHandle'()
+
+        void set_reverb_properties 'setReverbProperties'(const EFXEAXREVERBPROPERTIES&) except +
+        void set_chorus_properties 'setChorusProperties'(const EFXEAXREVERBPROPERTIES&) except +
+
+        void destroy() except +
+        
 
     cdef cppclass Decoder:
         int get_frequency 'getFrequency'()
