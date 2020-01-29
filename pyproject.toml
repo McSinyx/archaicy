@@ -1,3 +1,4 @@
 [build-system]
-requires = ['setuptools>=43', 'wheel>=0.31', 'Cython', 'cmake']
+requires = ['setuptools>=43', 'wheel>=0.31', 'Cython',
+            'cmake>=3.12; "NixOS" not in platform_version']
 build-backend = "setuptools.build_meta"

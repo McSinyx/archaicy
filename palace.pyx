@@ -1236,11 +1236,7 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.set_send_auto()
 
-    def apply_effect(self, effect: Effect) -> None:
-        """Destroy the effect slot, returning it to the system. If the effect slot
-        is currently set on a source send, it will be removed first.
-        """
-        return self.impl.apply_effect()
+    # TODO: apply effect
 
     def destroy(self) -> None:
         """Retrieve each Source object and its pairing send this effect slot is
@@ -1252,7 +1248,7 @@ cdef class AuxiliaryEffectSlot:
     def source_sends(self) -> vector[SourceSend]:
         return self.impl.get_source_sends()
 
-    @@property
+    @property
     def use_count(self):
         return self.impl.get_use_count()
 
