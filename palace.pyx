@@ -1005,7 +1005,9 @@ cdef class Source:
 
     # TODO: set direct filter
     # TODO: set send filter
-    # TODO: set auxiliary send
+    def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
+        """Connect the effect slot to the given send path, using the filter properties"""
+        self.impl.set_auxiliary_send()
     # TODO: set auxiliary send filter
 
     def destroy(self) -> None:
@@ -1157,6 +1159,96 @@ cdef class SourceGroup:
         before being freed.
         """
         self.impl.destroy()
+
+
+cdef class AuxiliaryEffectSlot:
+    """An effect processor.
+
+    It takes the output mix of zero or more sources, applies DSP for the desired effect
+    (as configured by a given Effect object), then adds to the output mix.
+
+    Parameters
+    ----------
+    context : Optional[Context]
+        The context from which the auxiliary effect slot is to be created.
+        If it is `None`, the object is left uninitialized.
+    """
+    cdef alure.AuxiliaryEffectSlot impl
+
+    def __init__(self, context: Optional[Context]) -> None:
+        if context is None: return
+        self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+        self.destroy()
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl < (<SourceGroup> other).impl
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl <= (<SourceGroup> other).impl
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl == (<SourceGroup> other).impl
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl != (<SourceGroup> other).impl
+
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl > (<SourceGroup> other).impl
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, SourceGroup):
+            return NotImplemented
+        return self.impl >= (<SourceGroup> other).impl
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl
+
+    def set_gain(self, gain: float) -> None:
+        """If set to true, the reverb effect will automatically apply adjustments
+        to the source's send slot gains based on the effect properties.
+
+        Has no effect when using non-reverb effects. Default is true.
+        """
+        return self.impl.set_gain()
+
+    def set_send_auto(self, sendauto: bool) -> None:
+        """Update the effect slot with a new effect. The given effect object may
+        be altered or destroyed without affecting the effect slot.
+        """
+        return self.impl.set_send_auto()
+
+    # TODO: apply effect
+
+    def destroy(self) -> None:
+        """Retrieve each Source object and its pairing send this effect slot is
+        equivalent to calling `getSourceSends().size()`.
+        """
+        return self.impl.destroy()
+
+    @property
+    def source_sends(self) -> vector[SourceSend]:
+        return self.impl.get_source_sends()
+
+    @property
+    def use_count(self):
+        return self.impl.get_use_count()
 
 
 cdef class Decoder:
