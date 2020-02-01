@@ -1164,8 +1164,9 @@ cdef class SourceGroup:
 cdef class AuxiliaryEffectSlot:
     """An effect processor.
 
-    It takes the output mix of zero or more sources, applies DSP for the desired effect
-    (as configured by a given Effect object), then adds to the output mix.
+    It takes the output mix of zero or more sources,
+    applies DSP for the desired effect (as configured
+    by a given Effect object), then adds to the output mix.
 
     Parameters
     ----------
@@ -1188,34 +1189,34 @@ cdef class AuxiliaryEffectSlot:
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl < (<SourceGroup> other).impl
+        return self.impl < (<AuxiliaryEffectSlot> other).impl
 
     def __le__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl <= (<SourceGroup> other).impl
+        return self.impl <= (<AuxiliaryEffectSlot> other).impl
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl == (<SourceGroup> other).impl
+        return self.impl == (<AuxiliaryEffectSlot> other).impl
 
     def __ne__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl != (<SourceGroup> other).impl
+        return self.impl != (<AuxiliaryEffectSlot> other).impl
 
     def __gt__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl > (<SourceGroup> other).impl
+        return self.impl > (<AuxiliaryEffectSlot> other).impl
 
     def __ge__(self, other: Any) -> bool:
-        if not isinstance(other, SourceGroup):
+        if not isinstance(other, AuxiliaryEffectSlot):
             return NotImplemented
-        return self.impl >= (<SourceGroup> other).impl
+        return self.impl >= (<AuxiliaryEffectSlot> other).impl
 
     def __bool__(self) -> bool:
         return <boolean> self.impl
