@@ -546,22 +546,22 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         void destroy() except +
 
     cdef cppclass AuxiliaryEffectSlot:
-        ctypedef SourceImpl* handle_type
+        ctypedef AuxiliaryEffectSlotImpl* handle_type
 
-        Source()    # nil
-        Source(SourceImpl*)
-        Source(const Source&)
-        Source(Source&&)
+        AuxiliaryEffectSlot()    # nil
+        AuxiliaryEffectSlot(AuxiliaryEffectSlotImpl*)
+        AuxiliaryEffectSlot(const AuxiliaryEffectSlot&)
+        AuxiliaryEffectSlot(AuxiliaryEffectSlot&&)
 
-        Source& operator=(const Source&)
-        Source& operator=(Source&&)
+        AuxiliaryEffectSlot& operator=(const AuxiliaryEffectSlot&)
+        AuxiliaryEffectSlot& operator=(AuxiliaryEffectSlot&&)
 
-        boolean operator==(const Source&)
-        boolean operator!=(const Source&)
-        boolean operator<=(const Source&)
-        boolean operator>=(const Source&)
-        boolean operator<(const Source&)
-        boolean operator>(const Source&)
+        boolean operator==(const AuxiliaryEffectSlot&)
+        boolean operator!=(const AuxiliaryEffectSlot&)
+        boolean operator<=(const AuxiliaryEffectSlot&)
+        boolean operator>=(const AuxiliaryEffectSlot&)
+        boolean operator<(const AuxiliaryEffectSlot&)
+        boolean operator>(const AuxiliaryEffectSlot&)
 
         boolean operator bool()
 
