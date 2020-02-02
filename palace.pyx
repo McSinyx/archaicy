@@ -1256,6 +1256,7 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.destroy()
 
+    # TODO: Implement the SourceSend struct (see Attribute pair)
     @property
     def source_sends(self) -> List[SourceSend]:
         """Retrieve each `Source` object and its pairing
