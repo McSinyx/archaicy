@@ -1227,20 +1227,25 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
+        return self.impl.set_gain()
+
+    def set_send_auto(self, sendauto: bool) -> None:
+        return self.impl.set_send_auto()
+
+    gain = property(fset=set_gain, doc=(
         """If set to true, the reverb effect will automatically
-	apply adjustments to the source's send slot gains based
-	on the effect properties.
+        apply adjustments to the source's send slot gains based
+        on the effect properties.
 
         Has no effect when using non-reverb effects. Default is true.
         """
-        return self.impl.set_gain()
-
-    def send_auto(self, sendauto: bool) -> None:
+    ))
+    send_auto = property(fset=set_send_auto, doc= (
         """Update the effect slot with a new effect.
-	The given effect object may be altered or
-	destroyed without affecting the effect slot.
+        The given effect object may be altered or
+        destroyed without affecting the effect slot.
         """
-        return self.impl.set_send_auto()
+    ))
 
     # TODO: apply effect
 
@@ -1267,7 +1272,7 @@ cdef class AuxiliaryEffectSlot:
     def use_count(self):
         """Query the number of source sends the effect slot
         is used by. This is equivalent to calling
-        `len(source_sends)`
+        `len(self.source_sends).`
         """
         return self.impl.get_use_count()
 
