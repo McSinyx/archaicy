@@ -1168,7 +1168,6 @@ cdef class AuxiliaryEffectSlot:
 
     It takes the output mix of zero or more sources,
     applies DSP for the desired effect (as configured
-<<<<<<< HEAD
     by a given `Effect` object), then adds to the output mix.
 
     Parameters
@@ -1187,13 +1186,7 @@ cdef class AuxiliaryEffectSlot:
         self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
 
     def __enter__(self) -> AuxiliaryEffectSlot:
-=======
-    by a given Effect object), then adds to the output mix.
 
-    Parameters
-    ----------
-    context : Optional[Context]
-        The context from which the auxiliary effect slot is to be created.
         If it is `None`, the object is left uninitialized.
     """
     cdef alure.AuxiliaryEffectSlot impl
@@ -1203,7 +1196,6 @@ cdef class AuxiliaryEffectSlot:
         self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
 
     def __enter__(self):
->>>>>>> b5bdd8f0bffbdf140494893179a7c5c05c568392
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],
@@ -1245,48 +1237,31 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
-<<<<<<< HEAD
-        return self.impl.set_gain(gain)
-
-    def send_auto(self, sendauto: bool) -> None:
-        """If set to `True`, the reverb effect will automatically
-        apply adjustments to the source's send slot gains
-        based on the effect properties.
-
-        Has no effect when using non-reverb effects. Default is `True`.
-        """
-        return self.impl.set_send_auto(sendauto)
-=======
-        """If set to true, the reverb effect will automatically apply adjustments
-        to the source's send slot gains based on the effect properties.
+        """If set to true, the reverb effect will automatically
+	apply adjustments to the source's send slot gains based
+	on the effect properties.
 
         Has no effect when using non-reverb effects. Default is true.
         """
         return self.impl.set_gain()
 
-    def set_send_auto(self, sendauto: bool) -> None:
-        """Update the effect slot with a new effect. The given effect object may
-        be altered or destroyed without affecting the effect slot.
+    def send_auto(self, sendauto: bool) -> None:
+        """Update the effect slot with a new effect.
+	The given effect object may be altered or
+	destroyed without affecting the effect slot.
         """
         return self.impl.set_send_auto()
->>>>>>> b5bdd8f0bffbdf140494893179a7c5c05c568392
 
     # TODO: apply effect
 
     def destroy(self) -> None:
-<<<<<<< HEAD
         """Destroys the effect slot, returning it to the system.
         If the effect slot is currently set on a source send,
         it will be removed first
-=======
-        """Retrieve each Source object and its pairing send this effect slot is
-        equivalent to calling `getSourceSends().size()`.
->>>>>>> b5bdd8f0bffbdf140494893179a7c5c05c568392
         """
         return self.impl.destroy()
 
     @property
-<<<<<<< HEAD
     def source_sends(self) -> List[SourceSend]:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
@@ -1304,13 +1279,6 @@ cdef class AuxiliaryEffectSlot:
         is used by. This is equivalent to calling
         `len(source_sends)`
         """
-=======
-    def source_sends(self) -> vector[SourceSend]:
-        return self.impl.get_source_sends()
-
-    @property
-    def use_count(self):
->>>>>>> b5bdd8f0bffbdf140494893179a7c5c05c568392
         return self.impl.get_use_count()
 
 
