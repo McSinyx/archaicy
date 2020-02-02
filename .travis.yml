@@ -1,13 +1,9 @@
 language: python
 
 branches:
-<<<<<<< HEAD
   only:
     - master
     - /\d+\.\d+\.\d+(-\S+)?$/
-=======
-  only: master
->>>>>>> Nitpick CI
 
 env:
   global:

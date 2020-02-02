@@ -1227,10 +1227,10 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
-        return self.impl.set_gain()
+        return self.impl.set_gain(gain)
 
     def set_send_auto(self, sendauto: bool) -> None:
-        return self.impl.set_send_auto()
+        return self.impl.set_send_auto(sendauto)
 
     gain = property(fset=set_gain, doc=(
         """If set to true, the reverb effect will automatically
