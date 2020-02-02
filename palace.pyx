@@ -84,6 +84,20 @@ cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
     return attributes
 
 
+cdef vector[alure.SourceSend] mkssnds(vector[pair[Source, int]] ssnds):
+    """Convert source-sends from Python object to alure format."""
+    cdef vector[alure.SourceSend] src_snds
+    cdef alure.SourceSend ssnd
+    for m_source, m_send in ssnds:
+        ssnd.m_source = m_source
+        ssnd.m_send = m_send
+        src_snds.push_back(ssnd)
+    ssnd.m_source = None
+    ssnd.m_send = 0
+    src_snds.push_back(ssnd)
+    return src_snds
+
+
 cdef vector[float] from_vector3(alure.Vector3 v):
     """Convert alure::Vector3 to std::vector of 3 floats."""
     cdef vector[float] result
@@ -1258,16 +1272,11 @@ cdef class AuxiliaryEffectSlot:
 
     # TODO: Implement the SourceSend struct (see Attribute pair)
     @property
-    def source_sends(self) -> List[SourceSend]:
+    def source_sends(self) -> List[Tuple[Source, int]]:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
-        source_sends = []
-        for alure_source_send in self.impl.get_source_sends():
-            source_send = SourceSend(None)
-            source_send.impl = alure_source_send
-            source_sends.append(source_send)
-        return source_sends
+        return mkssnds(self.impl.get_source_send())
 
     @property
     def use_count(self):

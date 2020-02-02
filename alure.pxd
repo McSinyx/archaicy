@@ -86,8 +86,10 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
 
     cdef cppclass FilterParams:
         pass
+
     cdef cppclass SourceSend:
-        pass
+        Source m_source 'mSource'
+        int m_send 'mSend'
 
     # Enum classes:
     cdef cppclass SampleType:
