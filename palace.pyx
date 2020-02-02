@@ -1006,8 +1006,9 @@ cdef class Source:
     # TODO: set direct filter
     # TODO: set send filter
     def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
-        """Connect the effect slot to the given send path, using the filter properties"""
-        self.impl.set_auxiliary_send()
+        """Connect the effect slot to the given send path,
+        using the filter properties"""
+        self.impl.set_auxiliary_send(slot.impl, send)
     # TODO: set auxiliary send filter
 
     def destroy(self) -> None:
@@ -1166,21 +1167,24 @@ cdef class AuxiliaryEffectSlot:
 
     It takes the output mix of zero or more sources,
     applies DSP for the desired effect (as configured
-    by a given Effect object), then adds to the output mix.
+    by a given `Effect` object), then adds to the output mix.
 
     Parameters
     ----------
-    context : Optional[Context]
+    context : Context
         The context from which the auxiliary effect slot is to be created.
-        If it is `None`, the object is left uninitialized.
+
+    Raises
+    ----------
+    RuntimeError
+        If the effect slot can't be created.
     """
     cdef alure.AuxiliaryEffectSlot impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
+    def __init__(self, context: Context) -> None:
         self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
 
-    def __enter__(self):
+    def __enter__(self) -> AuxiliaryEffectSlot:
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],
@@ -1222,33 +1226,39 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
-        """If set to true, the reverb effect will automatically apply adjustments
-        to the source's send slot gains based on the effect properties.
-
-        Has no effect when using non-reverb effects. Default is true.
-        """
         return self.impl.set_gain()
 
-    def set_send_auto(self, sendauto: bool) -> None:
-        """Update the effect slot with a new effect. The given effect object may
-        be altered or destroyed without affecting the effect slot.
+    def send_auto(self, sendauto: bool) -> None:
+        """If set to true, the reverb effect will automatically
+        apply adjustments to the source's send slot gains
+        based on the effect properties.
+
+        Has no effect when using non-reverb effects. Default is true.
         """
         return self.impl.set_send_auto()
 
     # TODO: apply effect
 
     def destroy(self) -> None:
-        """Retrieve each Source object and its pairing send this effect slot is
-        equivalent to calling `getSourceSends().size()`.
+        """Destroys the effect slot, returning it to the system.
+        If the effect slot is currently set on a source send,
+        it will be removed first
         """
         return self.impl.destroy()
 
     @property
-    def source_sends(self) -> vector[SourceSend]:
+    def source_sends(self) -> list[SourceSend]:
+        """Retrieve each `Source` object and its pairing
+        send this effect slot is set on.
+        """
         return self.impl.get_source_sends()
 
     @property
     def use_count(self):
+        """Query the number of source sends the effect slot
+        is used by. This is equivalent to calling
+        `len(source_sends)`
+        """
         return self.impl.get_use_count()
 
 
