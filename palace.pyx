@@ -1186,16 +1186,6 @@ cdef class AuxiliaryEffectSlot:
         self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
 
     def __enter__(self) -> AuxiliaryEffectSlot:
-
-        If it is `None`, the object is left uninitialized.
-    """
-    cdef alure.AuxiliaryEffectSlot impl
-
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
-        self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
-
-    def __enter__(self):
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],
