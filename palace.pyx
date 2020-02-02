@@ -1226,16 +1226,16 @@ cdef class AuxiliaryEffectSlot:
         return <boolean> self.impl
 
     def set_gain(self, gain: float) -> None:
-        return self.impl.set_gain()
+        return self.impl.set_gain(gain)
 
     def send_auto(self, sendauto: bool) -> None:
-        """If set to true, the reverb effect will automatically
+        """If set to `True`, the reverb effect will automatically
         apply adjustments to the source's send slot gains
         based on the effect properties.
 
-        Has no effect when using non-reverb effects. Default is true.
+        Has no effect when using non-reverb effects. Default is `True`.
         """
-        return self.impl.set_send_auto()
+        return self.impl.set_send_auto(sendauto)
 
     # TODO: apply effect
 
@@ -1247,11 +1247,16 @@ cdef class AuxiliaryEffectSlot:
         return self.impl.destroy()
 
     @property
-    def source_sends(self) -> list[SourceSend]:
+    def source_sends(self) -> List[SourceSend]:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
-        return self.impl.get_source_sends()
+        source_sends = []
+        for alure_source_send in self.impl.get_source_sends():
+            source_send = SourceSend(None)
+            source_send.impl = alure_source_send
+            source_sends.append(source_send)
+        return source_sends
 
     @property
     def use_count(self):
