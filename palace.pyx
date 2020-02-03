@@ -84,18 +84,17 @@ cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
     return attributes
 
 
-cdef vector[alure.SourceSend] mkssnds(vector[pair[Source, int]] ssnds):
-    """Convert source-sends from Python object to alure format."""
-    cdef vector[alure.SourceSend] src_snds
-    cdef alure.SourceSend ssnd
-    for m_source, m_send in ssnds:
-        ssnd.m_source = m_source
-        ssnd.m_send = m_send
-        src_snds.push_back(ssnd)
-    ssnd.m_source = None
-    ssnd.m_send = 0
-    src_snds.push_back(ssnd)
-    return src_snds
+cdef vector[pair[Source, int]] unpack_source_sends(vector[alure.SourceSend] source_sends):
+    """Convert source-sends from alure format (C++) to Python object."""
+    source_send_list = [] # List[Tuple[Source, int]]
+    cdef Source m_source
+    cdef int m_send
+    for source_send in source_sends:
+        m_source = source_send.m_source
+        m_send = source_send.m_send
+        source_send = (m_source, m_send)
+        source_send_list.append(source_send)
+    return source_send_list
 
 
 cdef vector[float] from_vector3(alure.Vector3 v):
@@ -1252,14 +1251,12 @@ cdef class AuxiliaryEffectSlot:
         on the effect properties.
 
         Has no effect when using non-reverb effects. Default is true.
-        """
-    ))
+        """))
     send_auto = property(fset=set_send_auto, doc= (
         """Update the effect slot with a new effect.
         The given effect object may be altered or
         destroyed without affecting the effect slot.
-        """
-    ))
+        """))
 
     # TODO: apply effect
 
@@ -1276,7 +1273,7 @@ cdef class AuxiliaryEffectSlot:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
-        return mkssnds(self.impl.get_source_send())
+        return unpack_source_sends(self.impl.get_source_sends())
 
     @property
     def use_count(self):
