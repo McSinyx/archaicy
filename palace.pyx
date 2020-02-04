@@ -84,21 +84,6 @@ cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
     return attributes
 
 
-cdef vector[pair[alure.Source, int]] unpack_source_send(vector[alure.SourceSend] source_sends):
-    """Convert source-sends from alure format (C++) to Python object."""
-    cdef alure.Source m_source
-    cdef int m_send
-    cdef vector[pair[alure.Source, int]] source_send_list
-    cdef pair[alure.Source, int] source_send_pair
-    for source_send in source_sends:
-        m_source = source_send.m_source
-        m_send = source_send.m_send
-        source_send_pair.first = m_source
-        source_send_pair.second = m_send
-        source_send_list.push_back(source_send_pair)
-    return source_send_list
-
-
 cdef vector[float] from_vector3(alure.Vector3 v):
     """Convert alure::Vector3 to std::vector of 3 floats."""
     cdef vector[float] result
@@ -1275,7 +1260,22 @@ cdef class AuxiliaryEffectSlot:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
-        return unpack_source_sends(self.impl.get_source_sends())
+        cdef alure.Source m_source
+        cdef int m_send
+#        cdef vector[pair[alure.Source, uint]] source_send_list
+        source_send_list = []
+#        cdef pair[alure.Source, uint] source_send_pair
+        cdef vector[alure.SourceSend] source_sends
+        source_sends = self.impl.get_source_sends()
+
+        for source_send in source_sends:
+            m_source = source_send.m_source
+            m_send = source_send.m_send
+            py_m_source = Source(m_source)  # FIXME: the problem is here
+            py_m_send = m_send
+            source_send_pair = (py_m_source, py_m_send)
+            source_send_list.append(source_send_pair)
+        return source_send_list
 
     @property
     def use_count(self):
