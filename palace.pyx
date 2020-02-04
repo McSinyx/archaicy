@@ -84,16 +84,18 @@ cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
     return attributes
 
 
-cdef vector[pair[Source, int]] unpack_source_sends(vector[alure.SourceSend] source_sends):
+cdef vector[pair[alure.Source, int]] unpack_source_send(vector[alure.SourceSend] source_sends):
     """Convert source-sends from alure format (C++) to Python object."""
-    source_send_list = [] # List[Tuple[Source, int]]
-    cdef Source m_source
+    cdef alure.Source m_source
     cdef int m_send
+    cdef vector[pair[alure.Source, int]] source_send_list
+    cdef pair[alure.Source, int] source_send_pair
     for source_send in source_sends:
         m_source = source_send.m_source
         m_send = source_send.m_send
-        source_send = (m_source, m_send)
-        source_send_list.append(source_send)
+        source_send_pair.first = m_source
+        source_send_pair.second = m_send
+        source_send_list.push_back(source_send_pair)
     return source_send_list
 
 
