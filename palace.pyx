@@ -1304,28 +1304,16 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.destroy()
 
-    # TODO: Implement the SourceSend struct (see Attribute pair)
     @property
     def source_sends(self) -> List[Tuple[Source, int]]:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
-        cdef alure.Source m_source
-        cdef int m_send
-#        cdef vector[pair[alure.Source, uint]] source_send_list
-        source_send_list = []
-#        cdef pair[alure.Source, uint] source_send_pair
-        cdef vector[alure.SourceSend] source_sends
-        source_sends = self.impl.get_source_sends()
-
-        for source_send in source_sends:
-            m_source = source_send.m_source
+        for source_send in self.impl.get_source_sends():
+            m_source = Source()
             m_send = source_send.m_send
-            py_m_source = Source(m_source)  # FIXME: the problem is here
-            py_m_send = m_send
-            source_send_pair = (py_m_source, py_m_send)
-            source_send_list.append(source_send_pair)
-        return source_send_list
+            m_source.impl = source_send.m_source
+            yield m_source, m_send
 
     @property
     def use_count(self):
