@@ -1240,7 +1240,7 @@ cdef class AuxiliaryEffectSlot:
     cdef alure.AuxiliaryEffectSlot impl
 
     def __init__(self, context: Context) -> None:
-        self.impl = (<Context> context).impl.create_auxiliary_effect_slot()
+        self.impl = context.impl.create_auxiliary_effect_slot()
 
     def __enter__(self) -> AuxiliaryEffectSlot:
         return self
