@@ -88,8 +88,8 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         pass
 
     cdef cppclass SourceSend:
-        Source m_source 'mSource'
-        unsigned m_send 'mSend'
+        Source source 'mSource'
+        unsigned send 'mSend'
 
     # Enum classes:
     cdef cppclass SampleType:
@@ -550,7 +550,7 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
     cdef cppclass AuxiliaryEffectSlot:
         ctypedef AuxiliaryEffectSlotImpl* handle_type
 
-        AuxiliaryEffectSlot()    # nil
+        AuxiliaryEffectSlot()  # nil
         AuxiliaryEffectSlot(AuxiliaryEffectSlotImpl*)
         AuxiliaryEffectSlot(const AuxiliaryEffectSlot&)
         AuxiliaryEffectSlot(AuxiliaryEffectSlot&&)

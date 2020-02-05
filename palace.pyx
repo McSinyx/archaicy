@@ -35,7 +35,7 @@ __all__ = ['ALC_FALSE', 'ALC_TRUE', 'ALC_HRTF_SOFT', 'ALC_HRTF_ID_SOFT',
 
 
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from warnings import warn
 
 from libcpp cimport bool as boolean, nullptr
@@ -1055,9 +1055,11 @@ cdef class Source:
 
     # TODO: set direct filter
     # TODO: set send filter
+    
     def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
         """Connect the effect slot to the given send path,
-        using the filter properties"""
+        using the filter properties.
+        """
         self.impl.set_auxiliary_send(slot.impl, send)
 
     # TODO: set auxiliary send filter
@@ -1226,7 +1228,7 @@ cdef class AuxiliaryEffectSlot:
         The context from which the auxiliary effect slot is to be created.
 
     Raises
-    ----------
+    ------
     RuntimeError
         If the effect slot can't be created.
     """
@@ -1276,44 +1278,42 @@ cdef class AuxiliaryEffectSlot:
     def __bool__(self) -> bool:
         return <boolean> self.impl
 
-    def set_gain(self, gain: float) -> None:
-        return self.impl.set_gain(gain)
+    def set_gain(self, value: float) -> None:
+        self.impl.set_gain(value)
 
-    def set_send_auto(self, sendauto: bool) -> None:
-        return self.impl.set_send_auto(sendauto)
+    def set_send_auto(self, value: bool) -> None:
+        self.impl.set_send_auto(value)
 
     gain = property(fset=set_gain, doc=(
-        """If set to true, the reverb effect will automatically
+        """Set gain for the effect slot.
+        """))
+    send_auto = property(fset=set_send_auto, doc=(
+        """If set to `True`, the reverb effect will automatically
         apply adjustments to the source's send slot gains based
         on the effect properties.
 
-        Has no effect when using non-reverb effects. Default is true.
-        """))
-    send_auto = property(fset=set_send_auto, doc= (
-        """Update the effect slot with a new effect.
-        The given effect object may be altered or
-        destroyed without affecting the effect slot.
+        Has no effect when using non-reverb effects. Default is `True`.
         """))
 
     # TODO: apply effect
 
     def destroy(self) -> None:
-        """Destroys the effect slot, returning it to the system.
+        """Destroy the effect slot, returning it to the system.
         If the effect slot is currently set on a source send,
-        it will be removed first
+        it will be removed first.
         """
         return self.impl.destroy()
 
     @property
-    def source_sends(self) -> List[Tuple[Source, int]]:
+    def source_sends(self) -> Iterator[Tuple[Source, int]]:
         """Retrieve each `Source` object and its pairing
         send this effect slot is set on.
         """
         for source_send in self.impl.get_source_sends():
-            m_source = Source()
-            m_send = source_send.m_send
-            m_source.impl = source_send.m_source
-            yield m_source, m_send
+            source = Source()
+            send = source_send.send
+            source.impl = source_send.source
+            yield source, send
 
     @property
     def use_count(self):

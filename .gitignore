@@ -133,5 +133,5 @@ dmypy.json
 
 # IDE & editors
 .idea/
-# Emacs temp files patterns
+# Emacs backup files patterns
 \#*\#
