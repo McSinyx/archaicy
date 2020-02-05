@@ -1057,9 +1057,6 @@ cdef class Source:
     # TODO: set send filter
 
     def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
-        """Connect the effect slot to the given send path.
-        Any filter properties on the send path remain as they were.
-        """
         self.impl.set_auxiliary_send(slot.impl, send)
 
     # TODO: set auxiliary send filter
@@ -1067,6 +1064,11 @@ cdef class Source:
     def destroy(self) -> None:
         """Destroy the source, stop playback and release resources."""
         self.impl.destroy()
+
+    auxiliary_send = property(fset=set_auxiliary_send, doc=(
+        """Connect the effect slot to the given send path.
+        Any filter properties on the send path remain as they were.
+        """))
 
 
 cdef class SourceGroup:
@@ -1287,15 +1289,6 @@ cdef class AuxiliaryEffectSlot:
     def set_send_auto(self, value: bool) -> None:
         self.impl.set_send_auto(value)
 
-    gain = property(fset=set_gain, doc=('Gain of the effect slot.'))
-    send_auto = property(fset=set_send_auto, doc=(
-        """If set to `True`, the reverb effect will automatically
-        apply adjustments to the source's send slot gains based
-        on the effect properties.
-
-        Has no effect when using non-reverb effects.  Default is `True`.
-        """))
-
     # TODO: apply effect
 
     def destroy(self) -> None:
@@ -1323,6 +1316,15 @@ cdef class AuxiliaryEffectSlot:
         `len(tuple(self.source_sends))`.
         """
         return self.impl.get_use_count()
+
+    gain = property(fset=set_gain, doc=('Gain of the effect slot.'))
+    send_auto = property(fset=set_send_auto, doc=(
+        """If set to `True`, the reverb effect will automatically
+        apply adjustments to the source's send slot gains based
+        on the effect properties.
+
+        Has no effect when using non-reverb effects.  Default is `True`.
+        """))
 
 
 cdef class Decoder:
