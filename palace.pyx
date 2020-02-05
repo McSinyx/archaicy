@@ -1055,7 +1055,7 @@ cdef class Source:
 
     # TODO: set direct filter
     # TODO: set send filter
-    
+
     def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
         """Connect the effect slot to the given send path,
         using the filter properties.
@@ -1222,6 +1222,9 @@ cdef class AuxiliaryEffectSlot:
     applies DSP for the desired effect (as configured
     by a given `Effect` object), then adds to the output mix.
 
+    This can be used as a context manager that calls `destroy`
+    upon completion of the block, even if an error occurs.
+
     Parameters
     ----------
     context : Context
@@ -1310,7 +1313,7 @@ cdef class AuxiliaryEffectSlot:
         send this effect slot is set on.
         """
         for source_send in self.impl.get_source_sends():
-            source = Source()
+            source = Source(None)
             send = source_send.send
             source.impl = source_send.source
             yield source, send
@@ -1319,7 +1322,7 @@ cdef class AuxiliaryEffectSlot:
     def use_count(self):
         """Query the number of source sends the effect slot
         is used by. This is equivalent to calling
-        `len(self.source_sends).`
+        `len(self.source_sends)`.
         """
         return self.impl.get_use_count()
 
