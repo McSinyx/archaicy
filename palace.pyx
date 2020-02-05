@@ -1057,8 +1057,8 @@ cdef class Source:
     # TODO: set send filter
 
     def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
-        """Connect the effect slot to the given send path,
-        using the filter properties.
+        """Connect the effect slot to the given send path.
+        Any filter properties on the send path remain as they were.
         """
         self.impl.set_auxiliary_send(slot.impl, send)
 
@@ -1287,15 +1287,13 @@ cdef class AuxiliaryEffectSlot:
     def set_send_auto(self, value: bool) -> None:
         self.impl.set_send_auto(value)
 
-    gain = property(fset=set_gain, doc=(
-        """Set gain for the effect slot.
-        """))
+    gain = property(fset=set_gain, doc=('Gain of the effect slot.'))
     send_auto = property(fset=set_send_auto, doc=(
         """If set to `True`, the reverb effect will automatically
         apply adjustments to the source's send slot gains based
         on the effect properties.
 
-        Has no effect when using non-reverb effects. Default is `True`.
+        Has no effect when using non-reverb effects.  Default is `True`.
         """))
 
     # TODO: apply effect
@@ -1309,7 +1307,7 @@ cdef class AuxiliaryEffectSlot:
 
     @property
     def source_sends(self) -> Iterator[Tuple[Source, int]]:
-        """Retrieve each `Source` object and its pairing
+        """Iterator of each `Source` object and its pairing
         send this effect slot is set on.
         """
         for source_send in self.impl.get_source_sends():
@@ -1320,9 +1318,9 @@ cdef class AuxiliaryEffectSlot:
 
     @property
     def use_count(self):
-        """Query the number of source sends the effect slot
-        is used by. This is equivalent to calling
-        `len(self.source_sends)`.
+        """Number of source sends the effect slot
+        is used by.  This is equivalent to calling
+        `len(tuple(self.source_sends))`.
         """
         return self.impl.get_use_count()
 
