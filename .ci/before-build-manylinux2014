@@ -1,0 +1,18 @@
+#!/bin/sh
+set -ev
+yum install -y git cmake pulseaudio \
+  alsa-lib-devel pulseaudio-libs-devel jack-audio-connection-kit-devel \
+  libvorbis-devel opusfile-devel libsndfile-devel
+pulseaudio --start
+
+pip install cmake>=3.12
+git clone --depth 1 https://github.com/kcat/openal-soft
+cd openal-soft/build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
+cmake --build . --parallel `nproc` --target install --config Release
+
+git clone --depth 1 https://github.com/kcat/alure
+cd alure/build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
+cmake --build . --parallel `nproc` --target install --config Release
+pip uninstall -y cmake
