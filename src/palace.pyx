@@ -154,9 +154,8 @@ cdef class Device:
 
     Parameters
     ----------
-    name : Optional[str], optional
-        The name of the playback device.  If it is `None`,
-        the object is left uninitialized.
+    name : str, optional
+        The name of the playback device.
     fail_safe : bool, optional
         On failure, fallback to the default device if this is `True`,
         otherwise `RuntimeError` is raised.  Default to `False`.
@@ -179,9 +178,8 @@ cdef class Device:
     """
     cdef alure.Device impl
 
-    def __init__(self, name: Optional[str] = '',
+    def __init__(self, name: str = '',
                  fail_safe: bool = False) -> None:
-        if name is None: return
         try:
             self.impl = devmgr.open_playback(name)
         except RuntimeError as exc:
@@ -689,14 +687,12 @@ cdef class Source:
 
     Parameters
     ----------
-    context : Optional[Context]
+    context : Context
         The context from which the source is to be created.
-        If it is `None`, the object is left uninitialized.
     """
     cdef alure.Source impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
+    def __init__(self, context: Context) -> None:
         self.impl = (<Context> context).impl.create_source()
 
     def __enter__(self) -> Source:
@@ -1237,14 +1233,12 @@ cdef class SourceGroup:
 
     Parameters
     ----------
-    context : Optional[Context]
+    context : Context
         The context from which the source group is to be created.
-        If it is `None`, the object is left uninitialized.
     """
     cdef alure.SourceGroup impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
+    def __init__(self, context: Context) -> None:
         self.impl = (<Context> context).impl.create_source_group()
 
     def __enter__(self) -> SourceGroup:
@@ -1821,17 +1815,17 @@ cdef cppclass CppMessageHandler(alure.BaseMessageHandler):
         this.context = ctx  # Will this be garbage collected?
 
     void device_disconnected(alure.Device alure_device):
-        cdef Device device = Device(None)
+        cdef Device device = Device.__new__(Device)
         device.impl = alure_device
         context.message_handler.device_disconnected(device)
 
     void source_stopped(alure.Source alure_source):
-        cdef Source source = Source(None)
+        cdef Source source = Source.__new__(Source)
         source.impl = alure_source
         context.message_handler.source_stopped(source)
 
     void source_force_stopped(alure.Source alure_source):
-        cdef Source source = Source(None)
+        cdef Source source = Source.__new__(Source)
         source.impl = alure_source
         context.message_handler.source_force_stopped(source)
 
