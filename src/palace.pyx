@@ -178,8 +178,7 @@ cdef class Device:
     """
     cdef alure.Device impl
 
-    def __init__(self, name: str = '',
-                 fail_safe: bool = False) -> None:
+    def __init__(self, name: str = '', fail_safe: bool = False) -> None:
         try:
             self.impl = devmgr.open_playback(name)
         except RuntimeError as exc:
