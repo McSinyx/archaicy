@@ -692,7 +692,7 @@ cdef class Source:
     cdef alure.Source impl
 
     def __init__(self, context: Context) -> None:
-        self.impl = (<Context> context).impl.create_source()
+        self.impl = (context).impl.create_source()
 
     def __enter__(self) -> Source:
         return self
@@ -1238,7 +1238,7 @@ cdef class SourceGroup:
     cdef alure.SourceGroup impl
 
     def __init__(self, context: Context) -> None:
-        self.impl = (<Context> context).impl.create_source_group()
+        self.impl = (context).impl.create_source_group()
 
     def __enter__(self) -> SourceGroup:
         return self
@@ -1291,7 +1291,7 @@ cdef class SourceGroup:
             If this group is being added to its sub-group
             (i.e. it would create a circular sub-group chain).
         """
-        source_group: SourceGroup = SourceGroup(None)
+        source_group: SourceGroup = SourceGroup.__new__(SourceGroup)
         source_group.impl = self.impl.get_parent_group()
         return source_group
 
