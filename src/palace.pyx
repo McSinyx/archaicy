@@ -651,7 +651,7 @@ cdef class Buffer:
         """`Source` objects currently playing the buffer."""
         sources = []
         for alure_source in self.impl.get_sources():
-            source = Source(None)
+            source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
@@ -781,7 +781,7 @@ cdef class Source:
         --------
         SourceGroup : A group of `Source` references
         """
-        source_group = SourceGroup(None)
+        source_group = SourceGroup.__new__(SourceGroup)
         source_group.impl = self.impl.get_group()
         return source_group or None
 
@@ -1328,7 +1328,7 @@ cdef class SourceGroup:
         """The list of sources currently in the group."""
         sources = []
         for alure_source in self.impl.get_sources():
-            source = Source(None)
+            source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
@@ -1338,7 +1338,7 @@ cdef class SourceGroup:
         """The list of subgroups currently in the group."""
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
-            source_group = SourceGroup(None)
+            source_group = SourceGroup.__new__(SourceGroup)
             source_group.impl = alure_source_group
             source_groups.append(source_group)
         return source_groups
@@ -1464,7 +1464,7 @@ cdef class AuxiliaryEffectSlot:
         send this effect slot is set on.
         """
         for source_send in self.impl.get_source_sends():
-            source = Source(None)
+            source = Source.__new__(Source)
             send = source_send.send
             source.impl = source_send.source
             yield source, send
