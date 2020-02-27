@@ -650,6 +650,7 @@ cdef class Buffer:
     def sources(self) -> List[Source]:
         """`Source` objects currently playing the buffer."""
         sources = []
+        cdef Source source
         for alure_source in self.impl.get_sources():
             source = Source.__new__(Source)
             source.impl = alure_source
@@ -781,7 +782,7 @@ cdef class Source:
         --------
         SourceGroup : A group of `Source` references
         """
-        source_group = SourceGroup.__new__(SourceGroup)
+        cdef SourceGroup source_group = SourceGroup.__new__(SourceGroup)
         source_group.impl = self.impl.get_group()
         return source_group or None
 
@@ -1326,6 +1327,7 @@ cdef class SourceGroup:
     @property
     def sources(self) -> List[Source]:
         """The list of sources currently in the group."""
+        cdef Source source
         sources = []
         for alure_source in self.impl.get_sources():
             source = Source.__new__(Source)
@@ -1336,6 +1338,7 @@ cdef class SourceGroup:
     @property
     def sub_groups(self) -> List[SourceGroup]:
         """The list of subgroups currently in the group."""
+        cdef SourceGroup source_group
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
             source_group = SourceGroup.__new__(SourceGroup)
@@ -1463,6 +1466,7 @@ cdef class AuxiliaryEffectSlot:
         """Iterator of each `Source` object and its pairing
         send this effect slot is set on.
         """
+        cdef Source source
         for source_send in self.impl.get_source_sends():
             source = Source.__new__(Source)
             send = source_send.send
