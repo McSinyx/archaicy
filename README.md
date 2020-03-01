@@ -27,7 +27,8 @@ Palace can be install from the [Python Package Index][PyPI] via simply
 
     pip install palace
 
-Wheel distribution is only built for GNU/Linux on amd64 at the time of writing.
+Wheel distribution is only built for GNU/Linux and macOS on amd64
+at the time of writing, with the later is only available for Python 3.8.
 If you want to help out, please head to our GitHub issues [#1][GH-1].
 
 ### From source
