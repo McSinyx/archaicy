@@ -5,14 +5,12 @@ yum install -y git cmake pulseaudio \
   libvorbis-devel opusfile-devel libsndfile-devel
 pulseaudio --start
 
-pip install cmake>=3.12
+pip install cmake>=3.13
 git clone --depth 1 https://github.com/kcat/openal-soft
-cd openal-soft/build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-cmake --build . --parallel `nproc` --target install --config Release
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -S openal-soft -B openal-soft/build
+cmake --build openal-soft/build --parallel `nproc` --target install
 
 git clone --depth 1 https://github.com/kcat/alure
-cd alure/build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-cmake --build . --parallel `nproc` --target install --config Release
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -S alure -B alure/build
+cmake --build alure/build --parallel `nproc` --target install
 pip uninstall -y cmake
