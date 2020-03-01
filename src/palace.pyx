@@ -26,27 +26,41 @@ device_names : Dict[str, List[str]]
     Dictionary of available device names corresponding to each type.
 device_name_default : Dict[str, str]
     Dictionary of the default device name corresponding to each type.
+sample_types : FrozenSet[str]
+    Set of sample types.
+channel_configs : FrozenSet[str]
+    Set of channel configurations.
 """
 
-__all__ = ['ALC_FALSE', 'ALC_TRUE', 'ALC_HRTF_SOFT', 'ALC_HRTF_ID_SOFT',
-           'device_name_default', 'device_names',
-           'query_extension', 'use_context',
-           'Device', 'Context', 'Buffer', 'Source', 'SourceGroup', 'Decoder']
+__all__ = [
+    'ALC_FALSE', 'ALC_TRUE', 'ALC_HRTF_SOFT', 'ALC_HRTF_ID_SOFT',
+    'device_name_default', 'device_names', 'sample_types', 'channel_configs',
+    'sample_size', 'sample_length',
+    'query_extension', 'current_context', 'use_context',
+    'Device', 'Context', 'Buffer', 'Source', 'SourceGroup',
+    'AuxiliaryEffectSlot', 'Decoder', 'BaseDecoder', 'MessageHandler']
 
-
+from abc import abstractmethod, ABCMeta
 from types import TracebackType
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
+from typing import Any, Dict, FrozenSet, Iterator, List, Optional, Tuple, Type
 from warnings import warn
 
+from libc.stdint cimport uint64_t   # noqa
+from libc.string cimport memcpy
 from libcpp cimport bool as boolean, nullptr
 from libcpp.memory cimport shared_ptr
+from libcpp.string cimport string
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
+from cpython.mem cimport PyMem_RawMalloc, PyMem_RawFree
 
-cimport alure
+from std cimport milliseconds
+cimport alure   # noqa
 
-# Type aliases
+# Aliases
 Vector3 = Tuple[float, float, float]
+getter = property   # bypass Cython property hijack
+setter = lambda fset: property(fset=fset, doc=fset.__doc__)     # noqa
 
 # Cast to Python objects
 ALC_FALSE: int = alure.ALC_FALSE
@@ -70,30 +84,30 @@ device_name_default: Dict[str, str] = dict(
     full=devmgr.default_device_name(alure.DefaultDeviceType.Full),
     capture=devmgr.default_device_name(alure.DefaultDeviceType.Capture))
 
-
-cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
-    """Convert attribute pairs from Python object to alure format."""
-    cdef vector[alure.AttributePair] attributes
-    cdef alure.AttributePair pair
-    for attribute, value in attrs:
-        pair.attribute = attribute
-        pair.value = value
-        attributes.push_back(pair)  # insert a copy
-    pair.attribute = pair.value = 0
-    attributes.push_back(pair)  # insert a copy
-    return attributes
+sample_types: FrozenSet[str] = frozenset({
+    'Unsigned 8-bit', 'Signed 16-bit', '32-bit float', 'Mulaw'})
+channel_configs: FrozenSet[str] = frozenset({
+    'Mono', 'Stereo', 'Rear', 'Quadrophonic',
+    '5.1 Surround', '6.1 Surround', '7.1 Surround',
+    'B-Format 2D', 'B-Format 3D'})
 
 
-cdef vector[float] from_vector3(alure.Vector3 v):
-    """Convert alure::Vector3 to std::vector of 3 floats."""
-    cdef vector[float] result
-    for i in range(3): result.push_back(v[i])
-    return result
+def sample_size(length: int, channel_config: str, sample_type: str) -> int:
+    """Return the size of the given number of sample frames.
+
+    Raises
+    ------
+    RuntimeError
+        If the byte size result too large.
+    """
+    return alure.frames_to_bytes(
+        length, to_channel_config(channel_config), to_sample_type(sample_type))
 
 
-cdef alure.Vector3 to_vector3(vector[float] v):
-    """Convert std::vector of 3 floats to alure::Vector3."""
-    return alure.Vector3(v[0], v[1], v[2])
+def sample_length(size: int, channel_config: str, sample_type: str) -> int:
+    """Return the number of frames stored in the given byte size."""
+    return alure.bytes_to_frames(
+        size, to_channel_config(channel_config), to_sample_type(sample_type))
 
 
 def query_extension(name: str) -> bool:
@@ -104,6 +118,18 @@ def query_extension(name: str) -> bool:
     Device.query_extension : Query ALC extension on a device
     """
     return devmgr.query_extension(name)
+
+
+def current_context() -> Optional[Context]:
+    """Return the context that is currently used."""
+    cdef Context current = Context.__new__(Context)
+    current.impl = alure.Context.get_current()
+    if not current:
+        return None
+    current.device = Device.__new__(Device)
+    current.device.impl = current.impl.get_device()
+    current.listener = Listener(current)
+    return current
 
 
 def use_context(context: Optional[Context]) -> None:
@@ -229,7 +255,7 @@ cdef class Device:
     def efx_version(self) -> Tuple[int, int]:
         """EFX version supported by this device.
 
-        If the ALC_EXT_EFX extension is unsupported,
+        If the `ALC_EXT_EFX` extension is unsupported,
         this will be `(0, 0)`.
         """
         cdef alure.Version version = self.impl.get_efx_version()
@@ -244,15 +270,16 @@ cdef class Device:
     def max_auxiliary_sends(self) -> int:
         """Maximum number of auxiliary source sends.
 
-        If ALC_EXT_EFX is unsupported, this will be 0.
+        If `ALC_EXT_EFX` is unsupported, this will be 0.
         """
         return self.impl.get_max_auxiliary_sends()
 
     @property
     def hrtf_names(self) -> List[str]:
-        """List of available HRTF names, sorted as OpenAL gives them,
-        such that the index of a given name is the ID to use with
-        ALC_HRTF_ID_SOFT.
+        """List of available HRTF names.
+
+        The order is retained from OpenAL, such that the index of
+        a given name is the ID to use with `ALC_HRTF_ID_SOFT`.
 
         If the `ALC_SOFT_HRTF` extension is unavailable,
         this will be an empty list.
@@ -287,17 +314,19 @@ cdef class Device:
         self.impl.reset(mkattrs(attrs.items()))
 
     def pause_dsp(self) -> None:
-        """Pause device processing, stopping updates for its contexts.
+        """Pause device processing and stop contexts' updates.
+
         Multiple calls are allowed but it is not reference counted,
-        so the device will resume after one resume_dsp call.
+        so the device will resume after one `resume_dsp` call.
 
         This requires the `ALC_SOFT_pause_device` extension.
         """
         self.impl.pause_dsp()
 
     def resume_dsp(self) -> None:
-        """Resume device processing, restarting updates for
-        its contexts.  Multiple calls are allowed and will no-op.
+        """Resume device processing and restart contexts' updates.
+
+        Multiple calls are allowed and will no-op.
         """
         self.impl.resume_dsp()
 
@@ -316,8 +345,9 @@ cdef class Device:
         return self.impl.get_clock_time().count()
 
     def close(self) -> None:
-        """Close and free the device.  All previously-created contexts
-        must first be destroyed.
+        """Close and free the device.
+
+        All previously-created contexts must first be destroyed.
         """
         self.impl.close()
 
@@ -333,11 +363,12 @@ cdef class Context:
 
     is equivalent to ::
 
+        previous = current_context()
         use_context(context)
         try:
             ...
         finally:
-            use_context(None)
+            use_context(previous)
             context.destroy()
 
     Parameters
@@ -351,6 +382,10 @@ cdef class Context:
     ----------
     device : Device
         The device this context was created from.
+    listener : Listener
+        The listener instance of this context.
+    message_handler : MessageHandler
+        Handler of some certain events.
 
     Raises
     ------
@@ -358,22 +393,28 @@ cdef class Context:
         If context creation fails.
     """
     cdef alure.Context impl
+    cdef alure.Context previous
     cdef readonly Device device
     cdef readonly Listener listener
+    cdef public MessageHandler message_handler
 
     def __init__(self, device: Device, attrs: Dict[int, int] = {}) -> None:
         self.impl = device.impl.create_context(mkattrs(attrs.items()))
         self.device = device
         self.listener = Listener(self)
+        self.message_handler = MessageHandler()
+        self.impl.set_message_handler(
+            shared_ptr[alure.MessageHandler](new CppMessageHandler(self)))
 
     def __enter__(self) -> Context:
+        self.previous = alure.Context.get_current()
         use_context(self)
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],
                  exc_val: Optional[BaseException],
                  exc_tb: Optional[TracebackType]) -> Optional[bool]:
-        use_context(None)
+        alure.Context.make_current(self.previous)
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
@@ -410,10 +451,23 @@ cdef class Context:
         return <boolean> self.impl
 
     def destroy(self) -> None:
-        """Destroy the context.  The context must not be current
-        when this is called.
+        """Destroy the context.
+
+        The context must not be current when this is called.
         """
         self.impl.destroy()
+
+    def is_supported(self, channel_config: str, sample_type: str) -> bool:
+        """Return if the channel configuration and sample type
+        are supported by the context.
+
+        See Also
+        --------
+        sample_types : Set of sample types
+        channel_configs : Set of channel configurations
+        """
+        return self.impl.is_supported(to_channel_config(channel_config),
+                                      to_sample_type(sample_type))
 
     def update(self) -> None:
         """Update the context and all sources belonging to this context."""
@@ -437,36 +491,43 @@ cdef class Listener:
     def __bool__(self) -> bool:
         return <boolean> self.impl
 
-    def set_gain(self, value: float) -> None:
+    @setter
+    def gain(self, value: float) -> None:
+        """Master gain for all context output."""
         self.impl.set_gain(value)
 
-    def set_position(self, value: Vector3) -> None:
+    @setter
+    def position(self, value: Vector3) -> None:
+        """3D position of the listener."""
         self.impl.set_position(to_vector3(value))
 
-    def set_velocity(self, value: Vector3) -> None:
+    @setter
+    def velocity(self, value: Vector3) -> None:
+        """3D velocity of the listener, in units per second.
+
+        As with OpenAL, this does not actually alter the listener's
+        position, and instead just alters the pitch as determined by
+        the doppler effect.
+        """
         self.impl.set_velocity(to_vector3(value))
 
-    def set_orientation(self, value: Tuple[Vector3, Vector3]) -> None:
+    @setter
+    def orientation(self, value: Tuple[Vector3, Vector3]) -> None:
+        """3D orientation of the listener.
+
+        Parameters
+        ----------
+        at : Tuple[float, float, float]
+            Relative position.
+        up : Tuple[float, float, float]
+            Relative direction.
+        """
         at, up = value
         self.impl.set_orientation(
             pair[alure.Vector3, alure.Vector3](to_vector3(at), to_vector3(up)))
 
-    def set_meters_per_unit(self, value: float) -> None:
-        self.impl.set_meters_per_unit(value)
-
-    gain = property(fset=set_gain, doc='Master gain for all context output.')
-    position = property(fset=set_position, doc='3D position of the listener.')
-    velocity = property(fset=set_velocity, doc=(
-        """3D velocity of the listener, in units per second.
-        As with OpenAL, this does not actually alter the listener's
-        position, and instead just alters the pitch as determined by
-        the doppler effect.
-        """))
-    orientation = property(fset=set_orientation, doc=(
-        """3D orientation of the listener, using position-relative
-        `at` and `up` direction vectors.
-        """))
-    meters_per_unit = property(fset=set_meters_per_unit, doc=(
+    @setter
+    def meters_per_unit(self, value: float) -> None:
         """Number of meters per unit.
 
         This is used for various effects relying on the distance
@@ -474,7 +535,8 @@ cdef class Listener:
         If this is changed, so should the speed of sound
         (e.g. `context.speed_of_sound = 343.3 / meters_per_unit`
         to maintain a realistic 343.3 m/s for sound propagation).
-        """))
+        """
+        self.impl.set_meters_per_unit(value)
 
 
 cdef class Buffer:
@@ -492,6 +554,11 @@ cdef class Buffer:
     name : str
         Audio file or resource name.  Multiple calls with the same name
         will return the same buffer.
+
+    Attributes
+    ----------
+    name : str
+        Audio file or resource name.
 
     Raises
     ------
@@ -529,27 +596,25 @@ cdef class Buffer:
         """Buffer's frequency in hertz."""
         return self.impl.get_frequency()
 
-    # TODO: get channel config (enum class)
     @property
-    def channel_config_name(self) -> str:
-        """Buffer's sample configuration name."""
+    def channel_config(self) -> str:
+        """Buffer's sample configuration."""
         return alure.get_channel_config_name(
             self.impl.get_channel_config())
 
-    # TODO: get sample type (enum class)
     @property
-    def sample_type_name(self) -> str:
-        """Buffer's sample type name."""
+    def sample_type(self) -> str:
+        """Buffer's sample type."""
         return alure.get_sample_type_name(
             self.impl.get_sample_type())
 
     def play(self, source: Optional[Source] = None) -> Source:
-        """Play `source` using the buffer.  The same buffer
-        may be played from multiple sources simultaneously.
+        """Play `source` using the buffer.
 
-        If `source` is `None`, create a new one.
+        Return the source used for playing.  If `None` is given,
+        create a new one.
 
-        Return the source used for playing.
+        One buffer may be played from multiple sources simultaneously.
         """
         if source is None: source = Source(self.context)
         (<Source> source).impl.play(self.impl)
@@ -557,9 +622,10 @@ cdef class Buffer:
 
     @property
     def loop_points(self) -> Tuple[int, int]:
-        """Loop points for looping sources.  If the current context
-        does not support the `AL_SOFT_loop_points` extension,
-        `start = 0` and `end = length` respectively.
+        """Loop points for looping sources.
+
+        If the `AL_SOFT_loop_points` extension is not supported by the
+        current context, `start = 0` and `end = length` respectively.
         Otherwise, `start < end <= length`.
 
         Parameters
@@ -584,8 +650,9 @@ cdef class Buffer:
     def sources(self) -> List[Source]:
         """`Source` objects currently playing the buffer."""
         sources = []
+        cdef Source source
         for alure_source in self.impl.get_sources():
-            source = Source(None)
+            source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
@@ -602,8 +669,9 @@ cdef class Buffer:
         return self.impl.get_source_count()
 
     def destroy(self) -> None:
-        """Free the buffer's cache, invalidating all other
-        `Buffer` objects with the same name.
+        """Free the buffer's cache
+
+        This invalidates all other `Buffer` objects with the same name.
         """
         self.context.impl.remove_buffer(self.impl)
 
@@ -619,15 +687,13 @@ cdef class Source:
 
     Parameters
     ----------
-    context : Optional[Context]
+    context : Context
         The context from which the source is to be created.
-        If it is `None`, the object is left uninitialized.
     """
     cdef alure.Source impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
-        self.impl = (<Context> context).impl.create_source()
+    def __init__(self, context: Context) -> None:
+        self.impl = context.impl.create_source()
 
     def __enter__(self) -> Source:
         return self
@@ -641,6 +707,7 @@ cdef class Source:
 
     def stop(self) -> None:
         """Stop playback, releasing the buffer or decoder reference.
+
         Any pending playback from a future buffer is canceled.
         """
         self.impl.stop()
@@ -667,7 +734,7 @@ cdef class Source:
         which should be called regularly (30 to 50 times per second)
         for the fading to be smooth.
         """
-        self.impl.fade_out_to_stop(gain, alure.milliseconds(ms))
+        self.impl.fade_out_to_stop(gain, milliseconds(ms))
 
     def pause(self) -> None:
         """Pause the source if it is playing."""
@@ -715,7 +782,7 @@ cdef class Source:
         --------
         SourceGroup : A group of `Source` references
         """
-        source_group = SourceGroup(None)
+        cdef SourceGroup source_group = SourceGroup.__new__(SourceGroup)
         source_group.impl = self.impl.get_group()
         return source_group or None
 
@@ -728,9 +795,11 @@ cdef class Source:
 
     @property
     def priority(self) -> int:
-        """Playback priority (natural number).  The lowest priority
-        sources will be forcefully stopped when no more mixing sources
-        are available and higher priority sources are played.
+        """Playback priority (natural number).
+
+        The lowest priority sources will be forcefully stopped
+        when no more mixing sources are available and higher priority
+        sources are played.
         """
         return self.impl.get_priority()
 
@@ -760,8 +829,10 @@ cdef class Source:
 
     @property
     def offset_seconds(self) -> float:
-        """Source offset in seconds.  For streaming sources
-        this will be the offset based on the decoder's read position.
+        """Source offset in seconds.
+
+        For streaming sources this will be the offset based on
+        the decoder's read position.
         """
         return self.impl.get_sec_offset().count()
 
@@ -884,9 +955,10 @@ cdef class Source:
 
     @property
     def velocity(self) -> Vector3:
-        """3D velocity in units per second.  As with OpenAL,
-        this does not actually alter the source's osition,
-        and instead just alters the pitch as determined
+        """3D velocity in units per second.
+
+        As with OpenAL, this does not actually alter the source's
+        position, and instead just alters the pitch as determined
         by the doppler effect.
         """
         return from_vector3(self.impl.get_velocity())
@@ -897,8 +969,14 @@ cdef class Source:
 
     @property
     def orientation(self) -> Tuple[Vector3, Vector3]:
-        """3D orientation, using `at` and `up` vectors, which are
-        respectively relative position and direction.
+        """3D orientation of the source.
+
+        Parameters
+        ----------
+        at : Tuple[float, float, float]
+            Relative position.
+        up : Tuple[float, float, float]
+            Relative direction.
 
         Notes
         -----
@@ -1129,7 +1207,12 @@ cdef class Source:
     # TODO: set direct filter
     # TODO: set send filter
 
-    def set_auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
+    @setter
+    def auxiliary_send(self, slot: AuxiliaryEffectSlot, send: int) -> None:
+        """Connect the effect slot to the given send path.
+
+        Any filter properties on the send path remain as they were.
+        """
         self.impl.set_auxiliary_send(slot.impl, send)
 
     # TODO: set auxiliary send filter
@@ -1138,31 +1221,25 @@ cdef class Source:
         """Destroy the source, stop playback and release resources."""
         self.impl.destroy()
 
-    auxiliary_send = property(fset=set_auxiliary_send, doc=(
-        """Connect the effect slot to the given send path.
-        Any filter properties on the send path remain as they were.
-        """))
-
 
 cdef class SourceGroup:
-    """A group of `Source` references.  For instance, setting
-    `SourceGroup.gain` to 0.5 will halve the gain of all sources
-    in the group.
+    """A group of `Source` references.
+
+    For instance, setting `SourceGroup.gain` to 0.5 will halve the gain
+    of all sources in the group.
 
     This can be used as a context manager that calls `destroy` upon
     completion of the block, even if an error occurs.
 
     Parameters
     ----------
-    context : Optional[Context]
+    context : Context
         The context from which the source group is to be created.
-        If it is `None`, the object is left uninitialized.
     """
     cdef alure.SourceGroup impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
-        self.impl = (<Context> context).impl.create_source_group()
+    def __init__(self, context: Context) -> None:
+        self.impl = context.impl.create_source_group()
 
     def __enter__(self) -> SourceGroup:
         return self
@@ -1215,7 +1292,7 @@ cdef class SourceGroup:
             If this group is being added to its sub-group
             (i.e. it would create a circular sub-group chain).
         """
-        source_group: SourceGroup = SourceGroup(None)
+        source_group: SourceGroup = SourceGroup.__new__(SourceGroup)
         source_group.impl = self.impl.get_parent_group()
         return source_group
 
@@ -1225,8 +1302,9 @@ cdef class SourceGroup:
 
     @property
     def gain(self) -> float:
-        """Source group gain, accumulating with its sources'
-        and sub-groups' gain.
+        """Source group gain.
+
+        This accumulates with its sources' and sub-groups' gain.
         """
         return self.impl.get_gain()
 
@@ -1236,8 +1314,9 @@ cdef class SourceGroup:
 
     @property
     def pitch(self) -> float:
-        """Source group pitch, accumulates with its sources'
-        and sub-groups' pitch.
+        """Source group pitch.
+
+        This accumulates with its sources' and sub-groups' pitch.
         """
         return self.impl.get_pitch()
 
@@ -1248,9 +1327,10 @@ cdef class SourceGroup:
     @property
     def sources(self) -> List[Source]:
         """The list of sources currently in the group."""
+        cdef Source source
         sources = []
         for alure_source in self.impl.get_sources():
-            source = Source(None)
+            source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
@@ -1258,9 +1338,10 @@ cdef class SourceGroup:
     @property
     def sub_groups(self) -> List[SourceGroup]:
         """The list of subgroups currently in the group."""
+        cdef SourceGroup source_group
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
-            source_group = SourceGroup(None)
+            source_group = SourceGroup.__new__(SourceGroup)
             source_group.impl = alure_source_group
             source_groups.append(source_group)
         return source_groups
@@ -1303,7 +1384,7 @@ cdef class AuxiliaryEffectSlot:
     Parameters
     ----------
     context : Context
-        The context from which the auxiliary effect slot is to be created.
+        The context to create the auxiliary effect slot.
 
     Raises
     ------
@@ -1356,10 +1437,19 @@ cdef class AuxiliaryEffectSlot:
     def __bool__(self) -> bool:
         return <boolean> self.impl
 
-    def set_gain(self, value: float) -> None:
+    @setter
+    def gain(self, value: float) -> None:
+        """Gain of the effect slot."""
         self.impl.set_gain(value)
 
-    def set_send_auto(self, value: bool) -> None:
+    @setter
+    def send_auto(self, value: bool) -> None:
+        """If set to `True`, the reverb effect will automatically
+        apply adjustments to the source's send slot gains based
+        on the effect properties.
+
+        Has no effect when using non-reverb effects.  Default is `True`.
+        """
         self.impl.set_send_auto(value)
 
     # TODO: apply effect
@@ -1376,8 +1466,9 @@ cdef class AuxiliaryEffectSlot:
         """Iterator of each `Source` object and its pairing
         send this effect slot is set on.
         """
+        cdef Source source
         for source_send in self.impl.get_source_sends():
-            source = Source(None)
+            source = Source.__new__(Source)
             send = source_send.send
             source.impl = source_send.source
             yield source, send
@@ -1390,18 +1481,9 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.get_use_count()
 
-    gain = property(fset=set_gain, doc=('Gain of the effect slot.'))
-    send_auto = property(fset=set_send_auto, doc=(
-        """If set to `True`, the reverb effect will automatically
-        apply adjustments to the source's send slot gains based
-        on the effect properties.
-
-        Has no effect when using non-reverb effects.  Default is `True`.
-        """))
-
 
 cdef class Decoder:
-    """Audio decoder interface.
+    """Generic audio decoder.
 
     Parameters
     ----------
@@ -1413,16 +1495,17 @@ cdef class Decoder:
     See Also
     --------
     Buffer : Preloaded PCM samples coming from a `Decoder`
+
+    Notes
+    -----
+    Due to implementation details, while this creates decoder objects
+    from filenames using contexts, it is the superclass of the ABC
+    (abstract base class) `BaseDecoder`.
     """
     cdef shared_ptr[alure.Decoder] pimpl
-    cdef Context context
 
     def __init__(self, context: Context, name: str) -> None:
-        """Create a `Decoder` instance for the given audio file
-        or resource name.
-        """
         self.pimpl = context.impl.create_decoder(name)
-        self.context = context
 
     @property
     def frequency(self) -> int:
@@ -1430,43 +1513,93 @@ cdef class Decoder:
         return self.pimpl.get()[0].get_frequency()
 
     @property
-    def channel_config_name(self) -> str:
-        """Name of the channel configuration of the audio being decoded."""
+    def channel_config(self) -> str:
+        """Channel configuration of the audio being decoded."""
         return alure.get_channel_config_name(
             self.pimpl.get()[0].get_channel_config())
 
     @property
-    def sample_type_name(self) -> str:
-        """Name of the sample type of the audio being decoded."""
+    def sample_type(self) -> str:
+        """Sample type of the audio being decoded."""
         return alure.get_sample_type_name(
             self.pimpl.get()[0].get_sample_type())
 
     @property
     def length(self) -> int:
-        """Total length of the audio, in sample frames,
-        falling-back to 0.  Note that if the length is 0,
-        the decoder may not be used to load a `Buffer`.
+        """Length of audio in sample frames, falling-back to 0.
+
+        Notes
+        -----
+        Zero-length decoders may not be used to load a `Buffer`.
         """
         return self.pimpl.get()[0].get_length()
 
     @property
     def length_seconds(self) -> float:
-        """Total length of the audio, in seconds,
-        falling-back to 0.0.  Note that if the length is 0.0,
-        the decoder may not be used to load a `Buffer`.
+        """Length of audio in seconds, falling-back to 0.0.
+
+        Notes
+        -----
+        Zero-length decoders may not be used to load a `Buffer`.
         """
         return self.length / self.frequency
 
-    def play(self, chunk_len: int, queue_size: int,
-             source: Optional[Source] = None) -> Source:
-        """Play `source` by asynchronously streaming audio from
-        the decoder.  The decoder must NOT have its `read` or `seek`
-        called from elsewhere while in use.
+    def seek(self, pos: int) -> bool:
+        """Seek to pos, specified in sample frames.
 
-        Return the source used for playing.
+        Return if the seek was successful.
+        """
+        return self.pimpl.get()[0].seek(pos)
+
+    @property
+    def loop_points(self) -> Tuple[int, int]:
+        """Loop points in sample frames.
 
         Parameters
         ----------
+        start : int
+            Inclusive starting loop point.
+        end : int
+            Exclusive starting loop point.
+
+        Notes
+        -----
+        If `start >= end`, all available samples are included
+        in the loop.
+        """
+        return self.pimpl.get()[0].get_loop_points()
+
+    def read(self, count: int) -> bytes:
+        """Decode and return `count` sample frames.
+
+        If less than the requested count samples is returned,
+        the end of the audio has been reached.
+
+        See Also
+        --------
+        sample_length : length of samples of given size
+        """
+        cdef void* ptr = PyMem_RawMalloc(alure.frames_to_bytes(
+            count, self.pimpl.get()[0].get_channel_config(),
+            self.pimpl.get()[0].get_sample_type()))
+        if ptr == NULL: raise RuntimeError('Unable to allocate memory')
+        count = self.pimpl.get()[0].read(ptr, count)
+        cdef string samples = string(<const char*> ptr, alure.frames_to_bytes(
+            count, self.pimpl.get()[0].get_channel_config(),
+            self.pimpl.get()[0].get_sample_type()))
+        PyMem_RawFree(ptr)
+        return samples
+
+    def play(self, source: Source, chunk_len: int, queue_size: int) -> None:
+        """Stream audio asynchronously from the decoder.
+
+        The decoder must NOT have its `read` or `seek` called
+        from elsewhere while in use.
+
+        Parameters
+        ----------
+        source : Source
+            The source object to play audio.
         chunk_len : int
             The number of sample frames to read for each chunk update.
             Smaller values will require more frequent updates and
@@ -1475,10 +1608,296 @@ cdef class Decoder:
             The number of chunks to keep queued during playback.
             Smaller values use less memory while larger values
             improve protection against underruns.
-        source : Source, optional
-            The source object to play audio.  If this is `None`,
-            a new one will be created.
         """
-        if source is None: source = Source(self.context)
-        (<Source> source).impl.play(self.pimpl, chunk_len, queue_size)
-        return source
+        source.impl.play(self.pimpl, chunk_len, queue_size)
+
+
+# Decoder interface
+cdef class _BaseDecoder(Decoder):
+    """Cython bridge for BaseDecoder.
+
+    This class is NOT meant to be instantiated.
+    """
+    def __cinit__(self, *args, **kwargs) -> None:
+        self.pimpl = shared_ptr[alure.Decoder](new CppDecoder(self))
+
+    def __init__(self, *args, **kwargs) -> None:
+        raise TypeError("Can't instantiate class _BaseDecoder")
+
+
+class BaseDecoder(_BaseDecoder, metaclass=ABCMeta):
+    """Audio decoder interface.
+
+    Applications may derive from this, implement necessary methods,
+    and use it in places the API wants a `BaseDecoder` object.
+
+    Exceptions raised from `BaseDecoder` instances are ignored.
+    """
+    @abstractmethod
+    def __init__(self, *args, **kwargs) -> None: pass
+
+    @getter
+    @abstractmethod
+    def frequency(self) -> int:
+        """Sample frequency, in hertz, of the audio being decoded."""
+
+    @getter
+    @abstractmethod
+    def channel_config(self) -> str:
+        """Channel configuration of the audio being decoded."""
+
+    @getter
+    @abstractmethod
+    def sample_type(self) -> str:
+        """Sample type of the audio being decoded."""
+
+    @getter
+    @abstractmethod
+    def length(self) -> int:
+        """Length of audio in sample frames, falling-back to 0.
+
+        Notes
+        -----
+        Zero-length decoders may not be used to load a `Buffer`.
+        """
+
+    @abstractmethod
+    def seek(self, pos: int) -> bool:
+        """Seek to pos, specified in sample frames.
+
+        Return if the seek was successful.
+        """
+
+    @getter
+    @abstractmethod
+    def loop_points(self) -> Tuple[int, int]:
+        """Loop points in sample frames.
+
+        Parameters
+        ----------
+        start : int
+            Inclusive starting loop point.
+        end : int
+            Exclusive starting loop point.
+
+        Notes
+        -----
+        If `start >= end`, all available samples are included
+        in the loop.
+        """
+
+    @abstractmethod
+    def read(self, count: int) -> bytes:
+        """Decode and return `count` sample frames.
+
+        If less than the requested count samples is returned,
+        the end of the audio has been reached.
+        """
+
+
+cdef cppclass CppDecoder(alure.BaseDecoder):
+    Decoder pyo
+
+    CppDecoder(Decoder decoder):
+        this.pyo = decoder
+
+    unsigned get_frequency_() const:
+        return pyo.frequency
+
+    alure.ChannelConfig get_channel_config_() const:
+        return to_channel_config(pyo.channel_config)
+
+    alure.SampleType get_sample_type_() const:
+        return to_sample_type(pyo.sample_type)
+
+    uint64_t get_length_() const:
+        return pyo.length
+
+    boolean seek_(uint64_t pos):
+        return pyo.seek(pos)
+
+    pair[uint64_t, uint64_t] get_loop_points_() const:
+        return pyo.loop_points
+
+    # FIXME: dead-global-interpreter-lock
+    # Without GIL Context.update causes segfault.
+    unsigned read_(void* ptr, unsigned count) with gil:
+        cdef string samples = pyo.read(count)
+        memcpy(ptr, samples.c_str(), samples.size())
+        return alure.bytes_to_frames(
+            samples.size(), get_channel_config_(), get_sample_type_())
+
+
+cdef class MessageHandler:
+    """Message handler interface.
+
+    Applications may derive from this and set an instance on a context
+    to receive messages.  The base methods are no-ops, so subclasses
+    only need to implement methods for relevant messages.
+
+    Exceptions raised from `MessageHandler` instances are ignored.
+    """
+    def device_disconnected(self, device: Device) -> None:
+        """Handle disconnected device messages.
+
+        This is called when the given device has been disconnected and
+        is no longer usable for output.  As per the `ALC_EXT_disconnect`
+        specification, disconnected devices remain valid, however all
+        playing sources are automatically stopped, any sources that are
+        attempted to play will immediately stop, and new contexts may
+        not be created on the device.
+
+        Notes
+        -----
+        Connection status is checked during `Context.update` calls, so
+        method must be called regularly to be notified when a device is
+        disconnected.  This method may not be called if the device lacks
+        support for the `ALC_EXT_disconnect` extension.
+        """
+
+    def source_stopped(self, source: Source) -> None:
+        """Handle end-of-buffer/stream messages.
+
+        This is called when the given source reaches the end of buffer
+        or stream, which is detected upon a call to `Context.update`.
+        """
+
+    def source_force_stopped(self, source: Source) -> None:
+        """Handle forcefully stopped sources.
+
+        This is called when the given source was forced to stop,
+        because of one of the following reasons:
+
+        * There were no more mixing sources and a higher-priority source
+          preempted it.
+        * `source` is part of a `SourceGroup` (or sub-group thereof)
+          that had its `SourceGroup.stop_all` method called.
+        * `source` was playing a buffer that's getting removed.
+        """
+
+    def buffer_loading(self, name: str, channel_config: str, sample_type: str,
+                       sample_rate: int, data: List[int]) -> None:
+        """Handle messages from Buffer initialization.
+
+        This is called when a new buffer is about to be created
+        and loaded. which may be called asynchronously for buffers
+        being loaded asynchronously.
+
+        Parameters
+        ----------
+        name : str
+            Resource name passed to `Buffer`.
+        channel_config : str
+            Channel configuration of the given audio data.
+        sample_type : str
+            Sample type of the given audio data.
+        sample_rate : int
+            Sample rate of the given audio data.
+        data : List[int]
+            The audio data that is about to be fed to the OpenAL buffer.
+        """
+
+    def resource_not_found(self, name: str) -> str:
+        """Return the fallback resource for the one of the given name.
+
+        This is called when `name` is not found, allowing substitution
+        of a different resource until the returned string either points
+        to a valid resource or is empty (default).
+
+        For buffers being cached, the original name will still be used
+        for the cache entry so one does not have to keep track of
+        substituted resource names.
+        """
+        return ''
+
+
+cdef cppclass CppMessageHandler(alure.BaseMessageHandler):
+    Context context
+
+    CppMessageHandler(Context ctx):
+        this.context = ctx  # Will this be garbage collected?
+
+    void device_disconnected(alure.Device alure_device):
+        cdef Device device = Device.__new__(Device)
+        device.impl = alure_device
+        context.message_handler.device_disconnected(device)
+
+    void source_stopped(alure.Source alure_source):
+        cdef Source source = Source.__new__(Source)
+        source.impl = alure_source
+        context.message_handler.source_stopped(source)
+
+    void source_force_stopped(alure.Source alure_source):
+        cdef Source source = Source.__new__(Source)
+        source.impl = alure_source
+        context.message_handler.source_force_stopped(source)
+
+    void buffer_loading(string name, string channel_config, string sample_type,
+                        unsigned sample_rate, vector[signed char] data):
+        context.message_handler.buffer_loading(name, channel_config,
+                                               sample_type, sample_rate, data)
+
+    string resource_not_found(string name):
+        return context.message_handler.resource_not_found(name)
+
+
+# Helper cdef functions
+cdef vector[alure.AttributePair] mkattrs(vector[pair[int, int]] attrs):
+    """Convert attribute pairs from Python object to alure format."""
+    cdef vector[alure.AttributePair] attributes
+    cdef alure.AttributePair pair
+    for attribute, value in attrs:
+        pair.attribute = attribute
+        pair.value = value
+        attributes.push_back(pair)  # insert a copy
+    pair.attribute = pair.value = 0
+    attributes.push_back(pair)  # insert a copy
+    return attributes
+
+
+cdef vector[float] from_vector3(alure.Vector3 v):
+    """Convert alure::Vector3 to std::vector of 3 floats."""
+    cdef vector[float] result
+    for i in range(3): result.push_back(v[i])
+    return result
+
+
+cdef alure.Vector3 to_vector3(vector[float] v):
+    """Convert std::vector of 3 floats to alure::Vector3."""
+    return alure.Vector3(v[0], v[1], v[2])
+
+
+cdef alure.SampleType to_sample_type(str name) except +:
+    """Return the specified sample type enumeration."""
+    if name == 'Unsigned 8-bit':
+        return alure.SampleType.UInt8
+    elif name == 'Signed 16-bit':
+        return alure.SampleType.Int16
+    elif name == '32-bit float':
+        return alure.SampleType.Float32
+    elif name == 'Mulaw':
+        return alure.SampleType.Mulaw
+    raise ValueError(f'Invalid sample type name: {name}')
+
+
+cdef alure.ChannelConfig to_channel_config(str name) except +:
+    """Return the specified channel configuration enumeration."""
+    if name == 'Mono':
+        return alure.ChannelConfig.Mono
+    elif name == 'Stereo':
+        return alure.ChannelConfig.Stereo
+    elif name == 'Rear':
+        return alure.ChannelConfig.Rear
+    elif name == 'Quadrophonic':
+        return alure.ChannelConfig.Quad
+    elif name == '5.1 Surround':
+        return alure.ChannelConfig.X51
+    elif name == '6.1 Surround':
+        return alure.ChannelConfig.X61
+    elif name == '7.1 Surround':
+        return alure.ChannelConfig.X71
+    elif name == 'B-Format 2D':
+        return alure.ChannelConfig.BFormat2D
+    elif name == 'B-Format 3D':
+        return alure.ChannelConfig.BFormat3D
+    raise ValueError(f'Invalid channel configuration name: {name}')
