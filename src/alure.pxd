@@ -568,7 +568,31 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         size_t get_use_count 'getUseCount'() except +
 
     cdef cppclass Effect:
-        pass
+        ctypedef EffectImpl* handle_type 
+
+        Effect()    # nil
+        Effect(EffectImpl*)
+        Effect(const Effect&)
+        Effect(Effect&&)
+
+        Effect& operator=(const Effect&)
+        Effect& operator=(Effect&&)
+
+        boolean operator==(const Effect&)
+        boolean operator!=(const Effect&)
+        boolean operator<=(const Effect&)
+        boolean operator>=(const Effect&)
+        boolean operator<(const Effect&)
+        boolean operator>(const Effect&)
+
+        boolean operator bool()
+
+        handle_type get_handle 'getHandle'()
+
+        void set_reverb_properties 'setReverbProperties'(const EFXEAXREVERBPROPERTIES&) except +
+        void set_chorus_properties 'setChorusProperties'(const EFXEAXREVERBPROPERTIES&) except +
+
+        void destroy() except +
 
     cdef cppclass Decoder:
         int get_frequency 'getFrequency'()
