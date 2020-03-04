@@ -1575,7 +1575,98 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.get_use_count()
 
+
+cdef class Effect:
+    """
+    A collection of settings or parameters.
+
+    Parameters
+    ----------
+    context : Optional[Context]
+        The context from which the effect is to be created.
+        If it is None, `__init__` does nothing. 
+    """
+    cdef alure.Effect impl
+
+    def __init__(self, context: Optional[Context]) -> None:
+        if context is None: return
+        self.impl = (<Context> context).impl.create_effect()
+
+    def __enter__(self) -> Effect:
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+        self.destroy()
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl < other_effect.impl
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl <= other_effect.impl
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl == other_effect.impl
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl != other_effect.impl
+
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl > other_effect.impl
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, Effect):
+            return NotImplemented
+        other_effect: Effect = other
+        return self.impl >= other_effect.impl
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl
+
+    def set_reverb_properties(self, value: EFXEAXREVERBPROPERTIES) -> None:
+        self.impl.set_reverb_properties(value)
+
+    def set_chorus_properties(self, value: EFXCHORUSPROPERTIES) -> None:
+        self.impl.set_chorus_properties(value)
+    
+    reverb_properties = property(
+        fset=set_reverb_properties,
+        doc=(
+            """The effect with the specified reverb properties.
+            It will automatically downgrade to the Standard Reverb effect
+            if EAXReverb effect is not supported.
+            """))
+
+    chorus_properties = property(
+        fset=set_chorus_properties,
+        doc=(
+            """The effect with the specified chorus properties.
+            It will be thrown if EAXReverb effect is not supported.
+            """))
+
+    def destroy(self) -> None:
+        """Destroy the effect, removing all effects from it
+        before being freed.
+        """
+        self.impl.destroy()
 
+
 cdef class Decoder:
     """Generic audio decoder.
 
