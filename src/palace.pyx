@@ -56,6 +56,7 @@ from cpython.mem cimport PyMem_RawMalloc, PyMem_RawFree
 
 from std cimport milliseconds
 cimport alure   # noqa
+from alure cimport EFXEAXREVERBPROPERTIES, EFXCHORUSPROPERTIES
 
 # Aliases
 Vector3 = Tuple[float, float, float]
@@ -1639,26 +1640,55 @@ cdef class Effect:
     def __bool__(self) -> bool:
         return <boolean> self.impl
 
-    def set_reverb_properties(self, value: EFXEAXREVERBPROPERTIES) -> None:
-        self.impl.set_reverb_properties(value)
+    @setter
+    def reverb_properties(self, value: dict) -> None:
+        """The effect with the specified reverb properties.
+        It will automatically downgrade to the Standard Reverb effect
+        if EAXReverb effect is not supported.
+        """
+        cdef EFXEAXREVERBPROPERTIES properties
+        try:
+            properties.flDensity = value['density']
+            properties.flDiffusion = value['diffusion']
+            properties.flGain = value['gain']
+            properties.flGainHF = value['gain_hf']
+            properties.flGainLF = value['gain_lf']
+            properties.flDecayTime = value['decay_time']
+            properties.flDecayHFRatio = value['decay_hf_ratio']
+            properties.flDecayLFRatio = value['decay_lf_ratio']
+            properties.flReflectionsGain = value['reflections_gain']
+            properties.flReflectionsDelay = value['reflections_delay']
+            properties.flReflectionsPan[0] = value['reflections_pan'][0]
+            properties.flReflectionsPan[1] = value['reflections_pan'][1]
+            properties.flReflectionsPan[2] = value['reflections_pan'][2]
+            properties.flLateReverbGain = value['late_reverb_gain']
+            properties.flLateReverbDelay = value['late_reverb_delay']
+            properties.flLateReverbPan[0] = value['late_reverb_pan'][0]
+            properties.flLateReverbPan[1] = value['late_reverb_pan'][1]
+            properties.flLateReverbPan[2] = value['late_reverb_pan'][2]
+            properties.flEchoTime = value['echo_time']
+            properties.flEchoDepth = value['echo_depth']
+            properties.flModulationTime = value['modulation_time']
+            properties.flModulationDepth = value['modulation_depth']
+            properties.flAirAbsorptionGainHF = value['air_absorption_gain_hf']
+            properties.flHFReference = value['hf_reference']
+            properties.flLFReference = value['lf_reference']
+            properties.flRoomRolloffFactor = value['room_rolloff_factor']
+            properties.iDecayHFLimit = value['decay_hf_limit']
+        except KeyError:
+            pass
+        self.impl.set_reverb_properties(properties)
 
-    def set_chorus_properties(self, value: EFXCHORUSPROPERTIES) -> None:
-        self.impl.set_chorus_properties(value)
+    #def set_chorus_properties(self, value: EFXCHORUSPROPERTIES) -> None:
+    #    self.impl.set_chorus_properties(value)
     
-    reverb_properties = property(
-        fset=set_reverb_properties,
-        doc=(
-            """The effect with the specified reverb properties.
-            It will automatically downgrade to the Standard Reverb effect
-            if EAXReverb effect is not supported.
-            """))
 
-    chorus_properties = property(
-        fset=set_chorus_properties,
-        doc=(
-            """The effect with the specified chorus properties.
-            It will be thrown if EAXReverb effect is not supported.
-            """))
+    #chorus_properties = property(
+    #    fset=set_chorus_properties,
+    #    doc=(
+    #        """The effect with the specified chorus properties.
+    #        It will be thrown if EAXReverb effect is not supported.
+    #        """))
 
     def destroy(self) -> None:
         """Destroy the effect, removing all effects from it
