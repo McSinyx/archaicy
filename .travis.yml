@@ -23,7 +23,6 @@ addons:
       - libvorbis
       - opusfile
       - libsndfile
-    update: true
 
 install: pip install twine cibuildwheel
 

@@ -52,6 +52,7 @@ class BuildAlure2Ext(build_ext):
         for key, value in map(methodcaller('groups'),
                               re.finditer(r'^alure2_(\w*)=(.*)$',
                                           cmake.stderr, re.MULTILINE)):
+            print(key, value)
             for ext in self.extensions:
                 getattr(ext, key).extend(value.split(';'))
 

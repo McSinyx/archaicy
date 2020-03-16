@@ -224,7 +224,6 @@ def use_context(context: Optional[Context]) -> None:
 # TODO: use_context_thread
 
 
-# Somehow forward reference of FileIO does not work in tox.
 def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """Return the file I/O factory currently in used by audio decoders.
 
