@@ -23,6 +23,7 @@ addons:
       - libvorbis
       - opusfile
       - libsndfile
+    update: true
 
 install: pip install twine cibuildwheel
 
@@ -40,12 +41,6 @@ jobs:
     - os: osx
       language: shell
       env: CIBW_BUILD=cp38-macosx*
-    - services: docker
-      env: CIBW_BUILD=cp36-manylinux_x86_64
-    - services: docker
-      env: CIBW_BUILD=cp37-manylinux_x86_64
-    - services: docker
-      env: CIBW_BUILD=cp38-manylinux_x86_64
 
 script: cibuildwheel --output-dir=dist
 
