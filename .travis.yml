@@ -34,15 +34,11 @@ jobs:
   include:
     - os: osx
       language: shell
-      env: CIBW_BUILD=cp36-macosx*
-    - os: osx
-      language: shell
-      env: CIBW_BUILD=cp37-macosx*
-    - os: osx
-      language: shell
       env: CIBW_BUILD=cp38-macosx*
 
-script: cibuildwheel --output-dir=dist
+script:
+  - cmake .
+  - cibuildwheel --output-dir=dist
 
 deploy:
   skip_cleanup: true
