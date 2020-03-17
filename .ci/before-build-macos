@@ -5,3 +5,4 @@ cd /tmp/alure/build
 OPENALDIR=$(brew --prefix openal-soft) cmake -DCMAKE_FIND_FRAMEWORK=NEVER ..
 cmake --build . --config Release
 sudo cmake --install .
+install_name_tool -id libalure2.dylib libalure2.dylib
