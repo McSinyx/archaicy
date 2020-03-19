@@ -22,39 +22,86 @@
 
 Attributes
 ----------
+Vector3 : Type
+    Tuple of three floats.
+CHANNEL_CONFIG : int
+    Context creation key to specify the channel configuration
+    (either `MONO`, `STEREO`, `QUAD`, `X51`, `X61` or `X71`).
+SAMPLE_TYPE : int
+    Context creation key to specify the sample type
+    (either `[UNSIGNED_]{BYTE,SHORT,INT}` or `FLOAT`).
+FREQUENCY : int
+    Context creation key to specify the frequency in hertz.
+MONO_SOURCES : int
+    Context creation key to specify the number of mono (3D) sources.
+STEREO_SOURCES : int
+    Context creation key to specify the number of stereo sources.
+MAX_AUXILIARY_SENDS : int
+    Context creation key to specify the maximum number of
+    auxiliary source sends.
+HRTF : int
+    Context creation key to specify whether to enable HRTF
+    (either `FALSE`, `TRUE` or `DONT_CARE`).
+HRTF_ID : int
+    Context creation key to specify the HRTF to be used.
+OUTPUT_LIMITER : int
+    Context creation key to specify whether to use a gain limiter
+    (either `FALSE`, `TRUE` or `DONT_CARE`).
+sample_types : Tuple[str, ...]
+    Names of available sample types.
+channel_configs : Tuple[str, ...]
+    Names of available channel configurations.
 device_names : Dict[str, List[str]]
     Dictionary of available device names corresponding to each type.
 device_name_default : Dict[str, str]
     Dictionary of the default device name corresponding to each type.
-sample_types : FrozenSet[str]
-    Set of sample types.
-channel_configs : FrozenSet[str]
-    Set of channel configurations.
+decoder_factories : DecoderNamespace
+    Simple object for storing decoder factories.
+
+    User-registered factories are tried one after another
+    if `RuntimeError` is raised, in lexicographical order.
+    Internal decoder factories are always used after registered ones.
 """
 
 __all__ = [
-    'ALC_FALSE', 'ALC_TRUE', 'ALC_HRTF_SOFT', 'ALC_HRTF_ID_SOFT',
-    'device_name_default', 'device_names', 'sample_types', 'channel_configs',
-    'sample_size', 'sample_length',
-    'query_extension', 'current_context', 'use_context',
+    'Vector3', 'FALSE', 'TRUE', 'DONT_CARE', 'FREQUENCY',
+    'MONO_SOURCES', 'STEREO_SOURCES', 'MAX_AUXILIARY_SENDS', 'OUTPUT_LIMITER',
+    'CHANNEL_CONFIG', 'MONO', 'STEREO', 'QUAD', 'X51', 'X61', 'X71',
+    'SAMPLE_TYPE', 'BYTE', 'UNSIGNED_BYTE', 'SHORT', 'UNSIGNED_SHORT',
+    'INT', 'UNSIGNED_INT', 'FLOAT', 'HRTF', 'HRTF_ID',
+    'sample_types', 'channel_configs', 'device_name_default', 'device_names',
+    'decoder_factories', 'sample_size', 'sample_length', 'query_extension',
+    'current_context', 'use_context', 'current_fileio', 'use_fileio',
     'Device', 'Context', 'Buffer', 'Source', 'SourceGroup',
-    'AuxiliaryEffectSlot', 'Decoder', 'BaseDecoder', 'MessageHandler']
+    'AuxiliaryEffectSlot', 'Decoder', 'BaseDecoder', 'FileIO',
+    'MessageHandler']
 
 from abc import abstractmethod, ABCMeta
+from io import DEFAULT_BUFFER_SIZE
+from operator import itemgetter
 from types import TracebackType
-from typing import Any, Dict, FrozenSet, Iterator, List, Optional, Tuple, Type
+from typing import (Any, Callable, Iterator, Optional, Type,
+                    Dict, FrozenSet, List, Tuple)
 from warnings import warn
 
+try:    # Python 3.8+
+    from typing import Protocol
+except ImportError:
+    from abc import ABC as Protocol
+
 from libc.stdint cimport uint64_t   # noqa
+from libc.stdio cimport EOF
 from libc.string cimport memcpy
 from libcpp cimport bool as boolean, nullptr
-from libcpp.memory cimport shared_ptr
+from libcpp.memory cimport (make_unique, unique_ptr,    # noqa
+                            shared_ptr, static_pointer_cast)
 from libcpp.string cimport string
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 from cpython.mem cimport PyMem_RawMalloc, PyMem_RawFree
+from cpython.ref cimport Py_INCREF, Py_DECREF
 
-from std cimport milliseconds
+from std cimport istream, milliseconds, streambuf
 cimport alure   # noqa
 from alure cimport EFXEAXREVERBPROPERTIES, EFXCHORUSPROPERTIES
 
@@ -62,14 +109,47 @@ from alure cimport EFXEAXREVERBPROPERTIES, EFXCHORUSPROPERTIES
 Vector3 = Tuple[float, float, float]
 getter = property   # bypass Cython property hijack
 setter = lambda fset: property(fset=fset, doc=fset.__doc__)     # noqa
+Vector3: Type = Tuple[float, float, float]
 
 # Cast to Python objects
-ALC_FALSE: int = alure.ALC_FALSE
-ALC_TRUE: int = alure.ALC_TRUE
-ALC_HRTF_SOFT: int = alure.ALC_HRTF_SOFT
-ALC_HRTF_ID_SOFT: int = alure.ALC_HRTF_ID_SOFT
+FALSE: int = alure.ALC_FALSE
+TRUE: int = alure.ALC_TRUE
+DONT_CARE: int = alure.ALC_DONT_CARE_SOFT
+
+FREQUENCY: int = alure.ALC_FREQUENCY
+MONO_SOURCES: int = alure.ALC_MONO_SOURCES
+STEREO_SOURCES: int = alure.ALC_STEREO_SOURCES
+MAX_AUXILIARY_SENDS: int = alure.ALC_MAX_AUXILIARY_SENDS
+OUTPUT_LIMITER: int = alure.ALC_OUTPUT_LIMITER_SOFT
+
+CHANNEL_CONFIG: int = alure.ALC_FORMAT_CHANNELS_SOFT
+MONO: int = alure.ALC_MONO_SOFT
+STEREO: int = alure.ALC_STEREO_SOFT
+QUAD: int = alure.ALC_QUAD_SOFT
+X51: int = alure.ALC_5POINT1_SOFT
+X61: int = alure.ALC_6POINT1_SOFT
+X71: int = alure.ALC_7POINT1_SOFT
+
+SAMPLE_TYPE: int = alure.ALC_FORMAT_TYPE_SOFT
+BYTE: int = alure.ALC_BYTE_SOFT
+UNSIGNED_BYTE: int = alure.ALC_UNSIGNED_BYTE_SOFT
+SHORT: int = alure.ALC_SHORT_SOFT
+UNSIGNED_SHORT: int = alure.ALC_UNSIGNED_SHORT_SOFT
+INT: int = alure.ALC_INT_SOFT
+UNSIGNED_INT: int = alure.ALC_UNSIGNED_INT_SOFT
+FLOAT: int = alure.ALC_FLOAT_SOFT
+
+HRTF: int = alure.ALC_HRTF_SOFT
+HRTF_ID: int = alure.ALC_HRTF_ID_SOFT
 
 
+sample_types: Tuple[str, ...] = (
+    'Unsigned 8-bit', 'Signed 16-bit', '32-bit float', 'Mulaw')
+channel_configs: Tuple[str, ...] = (
+    'Mono', 'Stereo', 'Rear', 'Quadrophonic',
+    '5.1 Surround', '6.1 Surround', '7.1 Surround',
+    'B-Format 2D', 'B-Format 3D')
+
 # Since multiple calls of DeviceManager.get_instance() will give
 # the same instance, we can create module-level variable and expose
 # its attributes and methods.  This also prevents the device manager
@@ -85,12 +165,8 @@ device_name_default: Dict[str, str] = dict(
     full=devmgr.default_device_name(alure.DefaultDeviceType.Full),
     capture=devmgr.default_device_name(alure.DefaultDeviceType.Capture))
 
-sample_types: FrozenSet[str] = frozenset({
-    'Unsigned 8-bit', 'Signed 16-bit', '32-bit float', 'Mulaw'})
-channel_configs: FrozenSet[str] = frozenset({
-    'Mono', 'Stereo', 'Rear', 'Quadrophonic',
-    '5.1 Surround', '6.1 Surround', '7.1 Surround',
-    'B-Format 2D', 'B-Format 3D'})
+decoder_factories: DecoderNamespace = DecoderNamespace()
+cdef object fileio_factory = None   # type: Optional[Callable[[str], FileIO]]
 
 
 def sample_size(length: int, channel_config: str, sample_type: str) -> int:
@@ -150,6 +226,29 @@ def use_context(context: Optional[Context]) -> None:
 # TODO: use_context_thread
 
 
+def current_fileio() -> Optional[Callable[[str], FileIO]]:
+    """Return the file I/O factory currently in used by audio decoders.
+
+    If the default is being used, return `None`.
+    """
+    return fileio_factory
+
+
+def use_fileio(factory: Optional[Callable[[str], FileIO]],
+               buffer_size: int = DEFAULT_BUFFER_SIZE) -> None:
+    """Set the file I/O factory instance to be used by audio decoders.
+
+    If `factory=None` is provided, revert to the default.
+    """
+    global fileio_factory
+    fileio_factory = factory
+    if fileio_factory is None:
+        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory]())
+    else:
+        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory](
+            new CppFileIOFactory(fileio_factory, buffer_size)))
+
+
 cdef class Device:
     """Audio mix output, which is either a system audio output stream
     or an actual audio port.
@@ -197,9 +296,7 @@ cdef class Device:
     def __enter__(self) -> Device:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         self.close()
 
     def __lt__(self, other: Any) -> bool:
@@ -389,8 +486,6 @@ cdef class Context:
         The device this context was created from.
     listener : Listener
         The listener instance of this context.
-    message_handler : MessageHandler
-        Handler of some certain events.
 
     Raises
     ------
@@ -401,24 +496,20 @@ cdef class Context:
     cdef alure.Context previous
     cdef readonly Device device
     cdef readonly Listener listener
-    cdef public MessageHandler message_handler
 
     def __init__(self, device: Device, attrs: Dict[int, int] = {}) -> None:
         self.impl = device.impl.create_context(mkattrs(attrs.items()))
         self.device = device
         self.listener = Listener(self)
-        self.message_handler = MessageHandler()
-        self.impl.set_message_handler(
-            shared_ptr[alure.MessageHandler](new CppMessageHandler(self)))
+        self.impl.set_message_handler(shared_ptr[alure.MessageHandler](
+            new CppMessageHandler(MessageHandler())))
 
     def __enter__(self) -> Context:
         self.previous = alure.Context.get_current()
         use_context(self)
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         alure.Context.make_current(self.previous)
         self.destroy()
 
@@ -463,6 +554,18 @@ cdef class Context:
         self.impl.destroy()
 
     # TODO: start and end batch
+
+    @property
+    def message_handler(self) -> MessageHandler:
+        """Handler of some certain events."""
+        return static_pointer_cast[CppMessageHandler, alure.MessageHandler](
+            self.impl.get_message_handler()).get()[0].pyo
+
+    @message_handler.setter
+    def message_handler(self, message_handler: MessageHandler) -> None:
+        static_pointer_cast[CppMessageHandler, alure.MessageHandler](
+            self.impl.get_message_handler()).get()[0].pyo = message_handler
+
     # TODO: async wake interval
     # TODO: document that methods below require context to be current
 
@@ -596,15 +699,14 @@ cdef class Buffer:
             if not self:
                 raise RuntimeError(f'{name} does not exist in the cache')
         else:
-            self.impl = context.impl.get_buffer(name)
+            decoder: Decoder = Decoder.smart(context, name)
+            self.impl = context.impl.create_buffer_from(name, decoder.pimpl)
         self.context, self.name = context, name
 
     def __enter__(self) -> Buffer:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
@@ -745,9 +847,8 @@ cdef class Buffer:
     def sources(self) -> List[Source]:
         """`Source` objects currently playing the buffer."""
         sources = []
-        cdef Source source
         for alure_source in self.impl.get_sources():
-            source = Source.__new__(Source)
+            source: Source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
@@ -793,10 +894,41 @@ cdef class Source:
     def __enter__(self) -> Source:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         self.destroy()
+
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl < (<Source> other).impl
+
+    def __le__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl <= (<Source> other).impl
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl == (<Source> other).impl
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl != (<Source> other).impl
+
+    def __gt__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl > (<Source> other).impl
+
+    def __ge__(self, other: Any) -> bool:
+        if not isinstance(other, Source):
+            return NotImplemented
+        return self.impl >= (<Source> other).impl
+
+    def __bool__(self) -> bool:
+        return <boolean> self.impl
 
     # TODO: play from future buffer
 
@@ -1339,9 +1471,7 @@ cdef class SourceGroup:
     def __enter__(self) -> SourceGroup:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
@@ -1421,22 +1551,22 @@ cdef class SourceGroup:
 
     @property
     def sources(self) -> List[Source]:
-        """The list of sources currently in the group."""
+        """Sources under this group."""
         cdef Source source
         sources = []
         for alure_source in self.impl.get_sources():
-            source = Source.__new__(Source)
+            source: Source = Source.__new__(Source)
             source.impl = alure_source
             sources.append(source)
         return sources
 
     @property
     def sub_groups(self) -> List[SourceGroup]:
-        """The list of subgroups currently in the group."""
+        """Source groups under this group."""
         cdef SourceGroup source_group
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
-            source_group = SourceGroup.__new__(SourceGroup)
+            source_group: SourceGroup = SourceGroup.__new__(SourceGroup)
             source_group.impl = alure_source_group
             source_groups.append(source_group)
         return source_groups
@@ -1494,9 +1624,7 @@ cdef class AuxiliaryEffectSlot:
     def __enter__(self) -> AuxiliaryEffectSlot:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc) -> Optional[bool]:
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
@@ -1557,16 +1685,17 @@ cdef class AuxiliaryEffectSlot:
         return self.impl.destroy()
 
     @property
-    def source_sends(self) -> Iterator[Tuple[Source, int]]:
-        """Iterator of each `Source` object and its pairing
+    def source_sends(self) -> List[Tuple[Source, int]]:
+        """List of each `Source` object and its pairing
         send this effect slot is set on.
         """
-        cdef Source source
+        source_sends = []
         for source_send in self.impl.get_source_sends():
-            source = Source.__new__(Source)
+            source: Source = Source.__new__(Source)
             send = source_send.send
             source.impl = source_send.source
-            yield source, send
+            source_sends.append((source, send))
+        return source_sends
 
     @property
     def use_count(self):
@@ -1713,6 +1842,11 @@ cdef class Decoder:
     name : str
         Audio file or resource name.
 
+    Raises
+    ------
+    RuntimeError
+        If decoder creation fails.
+
     See Also
     --------
     Buffer : Preloaded PCM samples coming from a `Decoder`
@@ -1721,12 +1855,41 @@ cdef class Decoder:
     -----
     Due to implementation details, while this creates decoder objects
     from filenames using contexts, it is the superclass of the ABC
-    (abstract base class) `BaseDecoder`.
+    (abstract base class) `BaseDecoder`.  Because of this, `Decoder`
+    may only initialize an internal one.  To use registered factories,
+    please call the `smart` static method instead.
     """
     cdef shared_ptr[alure.Decoder] pimpl
 
     def __init__(self, context: Context, name: str) -> None:
         self.pimpl = context.impl.create_decoder(name)
+
+    @staticmethod
+    def smart(context: Context, name: str) -> Decoder:
+        """Return the decoder created from the given resource name.
+
+        This first tries user-registered decoder factories in
+        lexicographical order, then fallback to the internal ones.
+        """
+        def find_resource(name, subst):
+            if not name: raise RuntimeError('Failed to open file')
+            try:
+                if fileio_factory is None:
+                    return open(name, 'rb')
+                else:
+                    return fileio_factory(name)
+            except FileNotFoundError:
+                return find_resource(subst(name), subst)
+
+        resource = find_resource(
+            name, context.message_handler.resource_not_found)
+        for decoder_factory in decoder_factories:
+            resource.seek(0)
+            try:
+                return decoder_factory(resource)
+            except RuntimeError:
+                continue
+        return Decoder(context, name)
 
     @property
     def frequency(self) -> int:
@@ -1919,8 +2082,12 @@ class BaseDecoder(_BaseDecoder, metaclass=ABCMeta):
 cdef cppclass CppDecoder(alure.BaseDecoder):
     Decoder pyo
 
-    CppDecoder(Decoder decoder):
+    __init__(Decoder decoder):
         this.pyo = decoder
+        Py_INCREF(pyo)
+
+    __dealloc__():
+        Py_DECREF(pyo)
 
     unsigned get_frequency_() const:
         return pyo.frequency
@@ -1947,6 +2114,99 @@ cdef cppclass CppDecoder(alure.BaseDecoder):
         memcpy(ptr, samples.c_str(), samples.size())
         return alure.bytes_to_frames(
             samples.size(), get_channel_config_(), get_sample_type_())
+
+cdef class DecoderNamespace:
+    """Simple object for storing decoder factories."""
+    cdef dict __dict__
+
+    def __repr__(self) -> str:
+        decoders: str = ', '.join(
+            f'{k}={v}' for k, v in sorted(vars(self).items()))
+        return f'DecoderNamespace({decoders})'
+
+    def __iter__(self) -> Iterator[Callable[[FileIO], BaseDecoder]]:
+        return map(itemgetter(1), sorted(vars(self).items()))
+
+
+class FileIO(Protocol):
+    """File I/O protocol.
+
+    This static duck type defines methods required to be used by
+    palace decoders.  Despite its name, a `FileIO` is not necessarily
+    created from a file, but any seekable finite input stream.
+
+    Many classes defined in the standard library module `io`
+    are compatible with this protocol.
+
+    Notes
+    -----
+    Since PEP 544 is only implemented in Python 3.8+, type checking
+    for this on earlier Python version might not work as expected.
+    """
+    @abstractmethod
+    def read(self, size: int) -> bytes:
+        """Read at most size bytes, returned as bytes."""
+
+    @abstractmethod
+    def seek(self, offset: int, whence: int = 0) -> int:
+        """Move to new file position and return the file position.
+
+        Parameters
+        ----------
+        offset : int
+            A byte count.
+        whence : int, optional
+            Either 0 (default, move relative to start of file),
+            1 (move relative to current position)
+            or 2 (move relative to end of file).
+        """
+
+    @abstractmethod
+    def close(self) -> None:
+        """Close the file."""
+
+
+cdef cppclass CppStreamBuf(alure.BaseStreamBuf):
+    size_t buffer_size
+    object pyo  # type: FileIO
+    string buffer
+
+    __init__(object fileio, size_t bufsize):
+        this.buffer_size = bufsize
+        this.pyo = fileio
+        Py_INCREF(pyo)
+
+    __dealloc__():
+        pyo.close()
+        Py_DECREF(pyo)
+
+    size_t seek(long long offset, int whence):
+        cdef size_t result = pyo.seek(offset, whence)
+        underflow()
+        return result
+
+    int underflow():
+        this.buffer = pyo.read(buffer_size)
+        cdef char* p = <char*> buffer.c_str()
+        cdef size_t n = buffer.size()
+        setg(p, p, p+n)
+        return p[0] if n else EOF
+
+
+cdef cppclass CppFileIOFactory(alure.BaseFileIOFactory):
+    size_t buffer_size
+    object pyo  # type: Callable[[str], FileIO]
+
+    __init__(object factory, size_t bufsize):
+        this.buffer_size = bufsize
+        this.pyo = factory
+        Py_INCREF(pyo)
+
+    __dealloc__():
+        Py_DECREF(pyo)
+
+    unique_ptr[istream] open_file(const string& name):
+        return make_unique[istream](new CppStreamBuf(pyo(name), buffer_size))
 
 
 cdef class MessageHandler:
@@ -2033,33 +2293,37 @@ cdef class MessageHandler:
 
 
 cdef cppclass CppMessageHandler(alure.BaseMessageHandler):
-    Context context
+    MessageHandler pyo
 
-    CppMessageHandler(Context ctx):
-        this.context = ctx  # Will this be garbage collected?
+    __init__(MessageHandler message_handler):
+        this.pyo = message_handler
+        Py_INCREF(pyo)
 
-    void device_disconnected(alure.Device alure_device):
+    __dealloc__():
+        Py_DECREF(pyo)
+
+    void device_disconnected(alure.Device& alure_device):
         cdef Device device = Device.__new__(Device)
         device.impl = alure_device
-        context.message_handler.device_disconnected(device)
+        pyo.device_disconnected(device)
 
-    void source_stopped(alure.Source alure_source):
+    void source_stopped(alure.Source& alure_source):
         cdef Source source = Source.__new__(Source)
         source.impl = alure_source
-        context.message_handler.source_stopped(source)
+        pyo.source_stopped(source)
 
-    void source_force_stopped(alure.Source alure_source):
+    void source_force_stopped(alure.Source& alure_source):
         cdef Source source = Source.__new__(Source)
         source.impl = alure_source
-        context.message_handler.source_force_stopped(source)
+        pyo.source_force_stopped(source)
 
     void buffer_loading(string name, string channel_config, string sample_type,
                         unsigned sample_rate, vector[signed char] data):
-        context.message_handler.buffer_loading(name, channel_config,
-                                               sample_type, sample_rate, data)
+        pyo.buffer_loading(name, channel_config, sample_type,
+                           sample_rate, data)
 
     string resource_not_found(string name):
-        return context.message_handler.resource_not_found(name)
+        return pyo.resource_not_found(name)
 
 
 # Helper cdef functions

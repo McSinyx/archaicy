@@ -20,12 +20,12 @@
 
 from libc.stdint cimport int64_t, uint64_t
 from libcpp cimport bool as boolean, nullptr_t
-from libcpp.memory cimport shared_ptr
+from libcpp.memory cimport shared_ptr, unique_ptr
 from libcpp.string cimport string
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
-from std cimport duration, nanoseconds, milliseconds, shared_future
+from std cimport duration, nanoseconds, milliseconds, shared_future, streambuf
 
 
 # OpenAL and Alure auxiliary declarations
@@ -33,10 +33,39 @@ cdef extern from 'alc.h' nogil:
     cdef int ALC_FALSE
     cdef int ALC_TRUE
 
+    cdef int ALC_FREQUENCY
+
+    cdef int ALC_MONO_SOURCES
+    cdef int ALC_STEREO_SOURCES
+
+
+cdef extern from 'efx.h' nogil:
+    cdef int ALC_MAX_AUXILIARY_SENDS
+
 
 cdef extern from 'alure2-alext.h' nogil:
+    cdef int ALC_FORMAT_CHANNELS_SOFT
+    cdef int ALC_MONO_SOFT
+    cdef int ALC_STEREO_SOFT
+    cdef int ALC_QUAD_SOFT
+    cdef int ALC_5POINT1_SOFT
+    cdef int ALC_6POINT1_SOFT
+    cdef int ALC_7POINT1_SOFT
+
+    cdef int ALC_FORMAT_TYPE_SOFT
+    cdef int ALC_BYTE_SOFT
+    cdef int ALC_UNSIGNED_BYTE_SOFT
+    cdef int ALC_SHORT_SOFT
+    cdef int ALC_UNSIGNED_SHORT_SOFT
+    cdef int ALC_INT_SOFT
+    cdef int ALC_UNSIGNED_INT_SOFT
+    cdef int ALC_FLOAT_SOFT
+
     cdef int ALC_HRTF_SOFT
+    cdef int ALC_DONT_CARE_SOFT
     cdef int ALC_HRTF_ID_SOFT
+
+    cdef int ALC_OUTPUT_LIMITER_SOFT
 
 
 cdef extern from 'alure2-aliases.h' namespace 'alure' nogil:
@@ -290,6 +319,7 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         Listener get_listener 'getListener'() except +
 
         shared_ptr[MessageHandler] set_message_handler 'setMessageHandler'(shared_ptr[MessageHandler]) except +
+        shared_ptr[MessageHandler] get_message_handler 'getMessageHandler'() except +
 
         void set_async_wake_interval 'setAsyncWakeInterval'(milliseconds) except +
         milliseconds get_async_wake_interval 'getAsyncWakeInterval'() except +
@@ -300,9 +330,6 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
 
         vector[string] get_available_resamplers 'getAvailableResamplers'() except +
         int get_default_resampler_index 'getDefaultResamplerIndex'() except +
-
-        Buffer get_buffer 'getBuffer'(string) except +
-        shared_future[Buffer] get_buffer_async 'getBufferAsync'(string) except +
 
         void precache_buffers_async 'precacheBuffersAsync'(vector[string]) except +
 
@@ -644,7 +671,11 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         pass
 
     cdef cppclass FileIOFactory:
-        pass
+        @staticmethod
+        unique_ptr[FileIOFactory] set(unique_ptr[FileIOFactory])
+        @staticmethod
+        FileIOFactory& get()
+
 
     cdef cppclass MessageHandler:
         pass
@@ -652,7 +683,11 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
 
 # GIL is needed for operations with Python objects.
 cdef extern from 'bases.h' namespace 'palace':
+    cdef cppclass BaseStreamBuf(streambuf):
+        pass
     cdef cppclass BaseDecoder(Decoder):
+        pass
+    cdef cppclass BaseFileIOFactory(FileIOFactory):
         pass
     cdef cppclass BaseMessageHandler(MessageHandler):
         pass

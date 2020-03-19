@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# A simple example showing how to load and play a sound
-# Copyright (C) 2019, 2020  Nguyễn Gia Phong
+# Use decoders from Python standard libraries
+# Copyright (C) 2020  Nguyễn Gia Phong
 #
 # This file is part of palace.
 #
@@ -17,25 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
+import aifc
+import sunau
+import wave
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
 from itertools import count, takewhile
 from sys import stderr
 from time import sleep
-from typing import Iterable, List
+from typing import Iterable, Tuple
+from types import ModuleType
 
-from palace import Device, Context, Buffer, MessageHandler
+from palace import (channel_configs, sample_types, decoder_factories,
+                    Device, Context, Buffer, BaseDecoder, FileIO)
 
 PERIOD: float = 0.025
-
-
-class LoadingBufferHandler(MessageHandler):
-    """Message handler of buffer loading events."""
-    def buffer_loading(self, name: str, channel_config: str, sample_type: str,
-                       sample_rate: int, data: List[int]) -> None:
-        """Print buffers information on buffer loading events."""
-        print(f'Playing {name} ({sample_type},',
-              f'{channel_config}, {sample_rate} Hz)')
 
 
 def pretty_time(seconds: float) -> str:
@@ -49,7 +45,6 @@ def play(files: Iterable[str], device: str) -> None:
     """Load and play files on the given device."""
     with Device(device, fail_safe=True) as dev, Context(dev) as ctx:
         print('Opened', dev.name['full'])
-        ctx.message_handler = LoadingBufferHandler()
         for filename in files:
             try:
                 buffer = Buffer(ctx, filename)
@@ -57,6 +52,8 @@ def play(files: Iterable[str], device: str) -> None:
                 stderr.write(f'Failed to open file: {filename}\n')
                 continue
             with buffer, buffer.play() as src:
+                print(f'Playing {filename} ({buffer.sample_type},',
+                      f'{buffer.channel_config}, {buffer.frequency} Hz)')
                 for i in takewhile(lambda i: src.playing, count()):
                     print(f' {pretty_time(src.offset_seconds)} /'
                           f' {pretty_time(buffer.length_seconds)}',
@@ -65,9 +62,49 @@ def play(files: Iterable[str], device: str) -> None:
                 print()
 
 
+class StandardDecoder(BaseDecoder):
+    """Decoder wrapper for standard libraries aifc, sunau and wave."""
+    def __init__(self, file: FileIO, module: ModuleType, mode: str):
+        self.error = module.Error
+        try:
+            self.impl = module.open(file, mode)
+        except self.error:
+            raise RuntimeError
+
+    @BaseDecoder.frequency.getter
+    def frequency(self) -> int: return self.impl.getframerate()
+
+    @BaseDecoder.channel_config.getter
+    def channel_config(self) -> str:
+        return channel_configs[self.impl.getnchannels()-1]
+
+    @BaseDecoder.sample_type.getter
+    def sample_type(self) -> str:
+        return sample_types[self.impl.getsampwidth()-1]
+
+    @BaseDecoder.length.getter
+    def length(self) -> int: return self.impl.getnframes()
+
+    def seek(self, pos: int) -> bool:
+        try:
+            self.impl.setpos(pos)
+        except self.error:
+            return False
+        else:
+            return True
+
+    @BaseDecoder.loop_points.getter
+    def loop_points(self) -> Tuple[int, int]: return 0, 0
+
+    def read(self, count: int) -> bytes: return self.impl.readframes(count)
+
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('files', nargs='+', help='audio files')
     parser.add_argument('-d', '--device', default='', help='device name')
     args = parser.parse_args()
+    decoder_factories.aifc = lambda file: StandardDecoder(file, aifc, 'rb')
+    decoder_factories.sunau = lambda file: StandardDecoder(file, sunau, 'r')
+    decoder_factories.wave = lambda file: StandardDecoder(file, wave, 'rb')
     play(args.files, args.device)
