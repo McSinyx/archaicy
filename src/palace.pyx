@@ -1813,14 +1813,14 @@ cdef class Effect:
         """The effect with the specified chorus properties.
         It will be thrown if EAXReverb effect is not supported.
         """
-        cdef EFXCHORUSPROPERTIESOR properties
+        cdef EFXCHORUSPROPERTIES properties
         try:
             properties.iWaveform = value['waveform']
             properties.iPhase = value['phase']
             properties.flRate = value['rate']
             properties.flDepth = value['depth']
             properties.flFeedback = value['feedback']
-            properties.flDelay = ['delay']
+            properties.flDelay = value['delay']
         except KeyError:
             pass
         self.impl.set_chorus_properties(properties)
