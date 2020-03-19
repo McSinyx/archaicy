@@ -1678,17 +1678,23 @@ cdef class Effect:
         except KeyError:
             pass
         self.impl.set_reverb_properties(properties)
-
-    #def set_chorus_properties(self, value: EFXCHORUSPROPERTIES) -> None:
-    #    self.impl.set_chorus_properties(value)
-    
-
-    #chorus_properties = property(
-    #    fset=set_chorus_properties,
-    #    doc=(
-    #        """The effect with the specified chorus properties.
-    #        It will be thrown if EAXReverb effect is not supported.
-    #        """))
+        
+    @setter
+    def chorus_properties(self, value: dict) -> None:
+        """The effect with the specified chorus properties.
+        It will be thrown if EAXReverb effect is not supported.
+        """
+        cdef EFXCHORUSPROPERTIESOR properties
+        try:
+            properties.iWaveform = value['waveform']
+            properties.iPhase = value['phase']
+            properties.flRate = value['rate']
+            properties.flDepth = value['depth']
+            properties.flFeedback = value['feedback']
+            properties.flDelay = ['delay']
+        except KeyError:
+            pass
+        self.impl.set_chorus_properties(properties)
 
     def destroy(self) -> None:
         """Destroy the effect, removing all effects from it
