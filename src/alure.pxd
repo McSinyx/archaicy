@@ -107,6 +107,7 @@ cdef extern from 'alure2.h' nogil:
         float flFeedback
         float flDelay
 
+
 cdef extern from 'alure2.h' namespace 'alure' nogil:
     # Type aliases:
     # char*: string
@@ -675,7 +676,6 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         unique_ptr[FileIOFactory] set(unique_ptr[FileIOFactory])
         @staticmethod
         FileIOFactory& get()
-
 
     cdef cppclass MessageHandler:
         pass

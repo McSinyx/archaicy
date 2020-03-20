@@ -1772,11 +1772,11 @@ cdef class Effect:
     @setter
     def reverb_properties(self, value: dict) -> None:
         """The effect with the specified reverb properties.
+
         It will automatically downgrade to the Standard Reverb effect
         if EAXReverb effect is not supported.
         """
         cdef EFXEAXREVERBPROPERTIES properties
-        try:
             properties.flDensity = value['density']
             properties.flDiffusion = value['diffusion']
             properties.flGain = value['gain']
@@ -1804,25 +1804,22 @@ cdef class Effect:
             properties.flLFReference = value['lf_reference']
             properties.flRoomRolloffFactor = value['room_rolloff_factor']
             properties.iDecayHFLimit = value['decay_hf_limit']
-        except KeyError:
-            pass
+
         self.impl.set_reverb_properties(properties)
         
     @setter
     def chorus_properties(self, value: dict) -> None:
         """The effect with the specified chorus properties.
+        
         It will be thrown if EAXReverb effect is not supported.
         """
         cdef EFXCHORUSPROPERTIES properties
-        try:
             properties.iWaveform = value['waveform']
             properties.iPhase = value['phase']
             properties.flRate = value['rate']
             properties.flDepth = value['depth']
             properties.flFeedback = value['feedback']
             properties.flDelay = value['delay']
-        except KeyError:
-            pass
         self.impl.set_chorus_properties(properties)
 
     def destroy(self) -> None:
