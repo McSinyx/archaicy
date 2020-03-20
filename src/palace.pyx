@@ -225,28 +225,6 @@ def use_context(context: Optional[Context]) -> None:
 # TODO: use_context_thread
 
 
-def current_fileio() -> Optional[Callable[[str], FileIO]]:
-    """Return the file I/O factory currently in used by audio decoders.
-
-    If the default is being used, return `None`.
-    """
-    return fileio_factory
-
-
-def use_fileio(factory: Optional[Callable[[str], FileIO]],
-               buffer_size: int = DEFAULT_BUFFER_SIZE) -> None:
-    """Set the file I/O factory instance to be used by audio decoders.
-
-    If `factory=None` is provided, revert to the default.
-    """
-    global fileio_factory
-    fileio_factory = factory
-    if fileio_factory is None:
-        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory]())
-    else:
-        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory](
-            new CppFileIOFactory(fileio_factory, buffer_size)))
-
 
 def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """Return the file I/O factory currently in used by audio decoders.
@@ -1847,8 +1825,8 @@ cdef class Effect:
         before being freed.
         """
         self.impl.destroy()
-
 
+
 cdef class Decoder:
     """Generic audio decoder.
 
