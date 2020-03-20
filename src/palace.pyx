@@ -106,7 +106,6 @@ cimport alure   # noqa
 from alure cimport EFXEAXREVERBPROPERTIES, EFXCHORUSPROPERTIES
 
 # Aliases
-Vector3 = Tuple[float, float, float]
 getter = property   # bypass Cython property hijack
 setter = lambda fset: property(fset=fset, doc=fset.__doc__)     # noqa
 Vector3: Type = Tuple[float, float, float]
@@ -224,6 +223,29 @@ def use_context(context: Optional[Context]) -> None:
 
 # TODO: current_context_thread
 # TODO: use_context_thread
+
+
+def current_fileio() -> Optional[Callable[[str], FileIO]]:
+    """Return the file I/O factory currently in used by audio decoders.
+
+    If the default is being used, return `None`.
+    """
+    return fileio_factory
+
+
+def use_fileio(factory: Optional[Callable[[str], FileIO]],
+               buffer_size: int = DEFAULT_BUFFER_SIZE) -> None:
+    """Set the file I/O factory instance to be used by audio decoders.
+
+    If `factory=None` is provided, revert to the default.
+    """
+    global fileio_factory
+    fileio_factory = factory
+    if fileio_factory is None:
+        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory]())
+    else:
+        alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory](
+            new CppFileIOFactory(fileio_factory, buffer_size)))
 
 
 def current_fileio() -> Optional[Callable[[str], FileIO]]:
@@ -1552,7 +1574,6 @@ cdef class SourceGroup:
     @property
     def sources(self) -> List[Source]:
         """Sources under this group."""
-        cdef Source source
         sources = []
         for alure_source in self.impl.get_sources():
             source: Source = Source.__new__(Source)
@@ -1563,7 +1584,6 @@ cdef class SourceGroup:
     @property
     def sub_groups(self) -> List[SourceGroup]:
         """Source groups under this group."""
-        cdef SourceGroup source_group
         source_groups = []
         for alure_source_group in self.impl.get_sub_groups():
             source_group: SourceGroup = SourceGroup.__new__(SourceGroup)
@@ -2111,6 +2131,7 @@ cdef cppclass CppDecoder(alure.BaseDecoder):
         memcpy(ptr, samples.c_str(), samples.size())
         return alure.bytes_to_frames(
             samples.size(), get_channel_config_(), get_sample_type_())
+
 
 cdef class DecoderNamespace:
     """Simple object for storing decoder factories."""

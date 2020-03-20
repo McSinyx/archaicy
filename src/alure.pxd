@@ -667,10 +667,10 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         pair[uint64_t, uint64_t] get_loop_points 'getLoopPoints'()
 
         int read(void*, int)
-
+
     cdef cppclass DecoderFactory:
         pass
-
+
     cdef cppclass FileIOFactory:
         @staticmethod
         unique_ptr[FileIOFactory] set(unique_ptr[FileIOFactory])
