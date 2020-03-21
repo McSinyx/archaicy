@@ -224,7 +224,6 @@ def use_context(context: Optional[Context]) -> None:
 # TODO: current_context_thread
 # TODO: use_context_thread
 
-
 
 def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """Return the file I/O factory currently in used by audio decoders.
@@ -248,7 +247,7 @@ def use_fileio(factory: Optional[Callable[[str], FileIO]],
         alure.FileIOFactory.set(unique_ptr[alure.FileIOFactory](
             new CppFileIOFactory(fileio_factory, buffer_size)))
 
-
+
 cdef class Device:
     """Audio mix output, which is either a system audio output stream
     or an actual audio port.
@@ -1588,9 +1587,7 @@ cdef class SourceGroup:
         self.impl.stop_all()
 
     def destroy(self) -> None:
-        """Destroy the source group, removing all sources from it
-        before being freed.
-        """
+        """Destroy the source group, remove and free all sources."""
         self.impl.destroy()
 
 
@@ -1673,7 +1670,12 @@ cdef class AuxiliaryEffectSlot:
         """
         self.impl.set_send_auto(value)
 
-    # TODO: apply effect
+    @setter
+    def effect(self, Effect: effect) -> None:
+        """Updates the effect slot with a new effect.
+        The given effect object may be altered or destroyed without
+        affecting the effect slot."""
+        self.impl.apply_effect(effect)
 
     def destroy(self) -> None:
         """Destroy the effect slot, returning it to the system.
@@ -1710,59 +1712,49 @@ cdef class Effect:
 
     Parameters
     ----------
-    context : Optional[Context]
-        The context from which the effect is to be created.
-        If it is None, `__init__` does nothing. 
+    context : Context
+        The context from which the effect is to be created. 
     """
     cdef alure.Effect impl
 
-    def __init__(self, context: Optional[Context]) -> None:
-        if context is None: return
-        self.impl = (<Context> context).impl.create_effect()
+    def __init__(self, context: Context) -> None:
+        self.impl = context.impl.create_effect()
 
     def __enter__(self) -> Effect:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, *exc):
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl < other_effect.impl
+        return self.impl < (<Effect> other).impl
 
     def __le__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl <= other_effect.impl
+        return self.impl <= (<Effect> other).impl
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl == other_effect.impl
+        return self.impl == (<Effect> other).impl
 
     def __ne__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl != other_effect.impl
+        return self.impl != (<Effect> other).impl
 
     def __gt__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl > other_effect.impl
+        return self.impl > (<Effect> other).impl
 
     def __ge__(self, other: Any) -> bool:
         if not isinstance(other, Effect):
             return NotImplemented
-        other_effect: Effect = other
-        return self.impl >= other_effect.impl
+        return self.impl >= (<Effect> other).impl
 
     def __bool__(self) -> bool:
         return <boolean> self.impl
@@ -1820,9 +1812,7 @@ cdef class Effect:
         self.impl.set_chorus_properties(properties)
 
     def destroy(self) -> None:
-        """Destroy the effect, removing all effects from it
-        before being freed.
-        """
+        """Destroy the effect, remove and free all effects."""
         self.impl.destroy()
 
 
