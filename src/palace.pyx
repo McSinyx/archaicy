@@ -73,7 +73,7 @@ __all__ = [
     'decoder_factories', 'sample_size', 'sample_length', 'query_extension',
     'current_context', 'use_context', 'current_fileio', 'use_fileio',
     'Device', 'Context', 'Buffer', 'Source', 'SourceGroup',
-    'AuxiliaryEffectSlot', 'Decoder', 'BaseDecoder', 'FileIO',
+    'AuxiliaryEffectSlot', 'Effect', 'Decoder', 'BaseDecoder', 'FileIO',
     'MessageHandler']
 
 from abc import abstractmethod, ABCMeta
@@ -224,7 +224,7 @@ def use_context(context: Optional[Context]) -> None:
 # TODO: current_context_thread
 # TODO: use_context_thread
 
-
+
 def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """Return the file I/O factory currently in used by audio decoders.
 
@@ -232,7 +232,7 @@ def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """
     return fileio_factory
 
-
+
 def use_fileio(factory: Optional[Callable[[str], FileIO]],
                buffer_size: int = DEFAULT_BUFFER_SIZE) -> None:
     """Set the file I/O factory instance to be used by audio decoders.
@@ -1671,11 +1671,13 @@ cdef class AuxiliaryEffectSlot:
         self.impl.set_send_auto(value)
 
     @setter
-    def effect(self, Effect: effect) -> None:
-        """Updates the effect slot with a new effect.
+    def effect(self, effect: Effect) -> None:
+        """Effect to be held by the slot.
+
         The given effect object may be altered or destroyed without
-        affecting the effect slot."""
-        self.impl.apply_effect(effect)
+        affecting the effect slot.
+        """
+        self.impl.apply_effect(effect.impl)
 
     def destroy(self) -> None:
         """Destroy the effect slot, returning it to the system.
@@ -1705,15 +1707,17 @@ cdef class AuxiliaryEffectSlot:
         """
         return self.impl.get_use_count()
 
-
+
 cdef class Effect:
-    """
-    A collection of settings or parameters.
+    """A collection of settings or parameters.
+
+    This can be used as a context manager that calls `destroy`
+    upon completion of the block, even if an error occurs.
 
     Parameters
     ----------
     context : Context
-        The context from which the effect is to be created. 
+        The context from which the effect is to be created.
     """
     cdef alure.Effect impl
 
@@ -1723,7 +1727,7 @@ cdef class Effect:
     def __enter__(self) -> Effect:
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc) -> Optional[bool]:
         self.destroy()
 
     def __lt__(self, other: Any) -> bool:
@@ -1795,11 +1799,11 @@ cdef class Effect:
         properties.flRoomRolloffFactor = value['room_rolloff_factor']
         properties.iDecayHFLimit = value['decay_hf_limit']
         self.impl.set_reverb_properties(properties)
-        
+
     @setter
     def chorus_properties(self, value: dict) -> None:
         """The effect with the specified chorus properties.
-        
+
         It will be thrown if EAXReverb effect is not supported.
         """
         cdef EFXCHORUSPROPERTIES properties
@@ -1812,7 +1816,7 @@ cdef class Effect:
         self.impl.set_chorus_properties(properties)
 
     def destroy(self) -> None:
-        """Destroy the effect, remove and free all effects."""
+        """Destroy the effect."""
         self.impl.destroy()
 
 

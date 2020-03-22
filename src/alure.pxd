@@ -630,7 +630,7 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         size_t get_use_count 'getUseCount'() except +
 
     cdef cppclass Effect:
-        ctypedef EffectImpl* handle_type 
+        ctypedef EffectImpl* handle_type
 
         Effect()    # nil
         Effect(EffectImpl*)
@@ -676,7 +676,7 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         unique_ptr[FileIOFactory] set(unique_ptr[FileIOFactory])
         @staticmethod
         FileIOFactory& get()
-
+
     cdef cppclass MessageHandler:
         pass
 
