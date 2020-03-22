@@ -232,7 +232,7 @@ def current_fileio() -> Optional[Callable[[str], FileIO]]:
     """
     return fileio_factory
 
-
+
 def use_fileio(factory: Optional[Callable[[str], FileIO]],
                buffer_size: int = DEFAULT_BUFFER_SIZE) -> None:
     """Set the file I/O factory instance to be used by audio decoders.
