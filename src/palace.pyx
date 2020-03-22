@@ -77,6 +77,7 @@ __all__ = [
 
 from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
+from enum import Enum, auto
 from io import DEFAULT_BUFFER_SIZE
 from operator import itemgetter
 from types import TracebackType
@@ -715,7 +716,21 @@ cdef class Context:
         """
         self.impl.set_speed_of_sound(value)
 
-    # TODO: distance model
+    @setter
+    def distance_model(self, value: DistanceModel) -> None:
+        """The distance model used to attenuate sources
+        given their distance from the listener.
+
+        The default, `DistanceModel.InverseClamped`, provides a realistic
+        l/r reduction in volume (that is, every doubling of distance
+        cause the gain to reduce by half).
+
+        The Clamped distance models restrict the source distance for
+        the purpose of distance attenuation, so a source won't sound
+        closer than its reference distance or farther than its max
+        distance.
+        """
+        self.impl.set_distance_model(to_distance_model(value))
 
     def update(self) -> None:
         """Update the context and all sources belonging to this context."""
@@ -2560,3 +2575,33 @@ cdef alure.ChannelConfig to_channel_config(str name) except +:
     elif name == 'B-Format 3D':
         return alure.ChannelConfig.BFormat3D
     raise ValueError(f'Invalid channel configuration name: {name}')
+
+
+class DistanceModel(Enum):
+    """Enum for DistanceModel."""
+    INVERSE_CLAMPED = auto()
+    LINEAR_CLAMPED = auto()
+    EXPONENT_CLAMPED = auto()
+    INVERSE = auto()
+    LINEAR = auto()
+    EXPONENT = auto()
+    NO = auto()
+
+
+cdef alure.DistanceModel to_distance_model(int model_id) except +:
+    """Converts distance model enum."""
+    if model_id == DistanceModel.INVERSE_CLAMPED:
+        return alure.DistanceModel.InverseClamped
+    elif model_id == DistanceModel.LINEAR_CLAMPED:
+        return alure.DistanceModel.LinearClamped
+    elif model_id == DistanceModel.EXPONENT_CLAMPED:
+        return alure.DistanceModel.ExponentClamped
+    elif model_id == DistanceModel.INVERSE:
+        return alure.DistanceModel.Inverse
+    elif model_id == DistanceModel.LINEAR:
+        return alure.DistanceModel.Linear
+    elif model_id == DistanceModel.EXPONENT:
+        return alure.DistanceModel.Exponent
+    elif model_id == DistanceModel.NO:
+        return alure.DistanceModel.No
+    raise ValueError(f'Invalid DistanceModel ID: {model_id}')

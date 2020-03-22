@@ -179,13 +179,13 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         Full 'alure::PlaybackName::Full'
 
     cdef enum DistanceModel:
-        InverseClamped 'alure::DistanceModel::InverseClamped'
-        LinearClamped 'alure::DistanceModel::LinearClamped'
-        ExponentClamped 'alure::DistanceModel::ExponentClamped'
-        Inverse 'alure::DistanceModel::Inverse'
-        Linear 'alure::DistanceModel::Linear'
-        Exponent 'alure::DistanceModel::Exponent'
-        No 'alure::DistanceModel::None'
+        INVERSE_CLAMPED 'alure::DistanceModel::InverseClamped'
+        LINEAR_CLAMPED 'alure::DistanceModel::LinearClamped'
+        EXPONENT_CLAMPED 'alure::DistanceModel::ExponentClamped'
+        INVERSE 'alure::DistanceModel::Inverse'
+        LINEAR 'alure::DistanceModel::Linear'
+        EXPONENT 'alure::DistanceModel::Exponent'
+        NONE 'alure::DistanceModel::None'
 
     cdef enum Spatialize:
         Off 'alure::Spatialize::Off'
