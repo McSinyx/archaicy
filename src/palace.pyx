@@ -1671,13 +1671,13 @@ cdef class AuxiliaryEffectSlot:
         self.impl.set_send_auto(value)
 
     @setter
-    def effect(self, effect: Effect) -> None:
+    def effect(self, value: Effect) -> None:
         """Effect to be held by the slot.
 
         The given effect object may be altered or destroyed without
         affecting the effect slot.
         """
-        self.impl.apply_effect(effect.impl)
+        self.impl.apply_effect(value.impl)
 
     def destroy(self) -> None:
         """Destroy the effect slot, returning it to the system.
