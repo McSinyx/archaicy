@@ -77,6 +77,9 @@ cdef extern from 'alure2-typeviews.h' namespace 'alure' nogil:
         const T* begin() except +
         const T* end() except +
 
+    cdef cppclass StringView:
+        StringView(string) except +
+
 
 # Alure main module
 cdef extern from 'alure2.h' nogil:
@@ -344,7 +347,7 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
         ArrayView[string] get_available_resamplers 'getAvailableResamplers'() except +
         int get_default_resampler_index 'getDefaultResamplerIndex'() except +
 
-        void precache_buffers_async 'precacheBuffersAsync'(vector[string]) except +
+        void precache_buffers_async 'precacheBuffersAsync'(vector[StringView]) except +
 
         Buffer create_buffer_from 'createBufferFrom'(string, shared_ptr[Decoder]) except +
         shared_future[Buffer] create_buffer_async_from 'createBufferAsyncFrom'(string, shared_ptr[Decoder]) except +

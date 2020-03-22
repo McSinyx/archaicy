@@ -102,6 +102,7 @@ from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 from cpython.mem cimport PyMem_RawMalloc, PyMem_RawFree
 from cpython.ref cimport Py_INCREF, Py_DECREF
+from cython.operator cimport dereference as deref
 
 from std cimport istream, milliseconds, streambuf
 cimport alure   # noqa
@@ -568,6 +569,7 @@ cdef class Context:
         If context creation fails.
     """
     cdef alure.Context impl
+    cdef vector[alure.StringView] precached_buffers
     cdef alure.Context previous
     cdef readonly Device device
     cdef readonly Listener listener
@@ -626,6 +628,7 @@ cdef class Context:
 
         The context must not be current when this is called.
         """
+        self.precached_buffers.clear()
         self.impl.destroy()
 
     def start_batch(self) -> None:
@@ -695,7 +698,32 @@ cdef class Context:
         """
         return self.impl.get_default_resampler_index()
 
-    # TODO: async buffers
+    def precache_buffers_async(self, names: List[str]) -> None:
+        """Prepare asynchronously cached buffers for the given
+        audio files or resource names.
+
+        Duplicate names and buffers already cached are ignored.
+        Cached buffers must be free using `remove_buffer`
+        before destroying the context.
+
+        The `Buffer` objects will be scheduled for loading
+        asynchronously, and should be retrieved later when needed
+        using `buffer_async` or `buffer`.  Buffers that cannot be
+        loaded, for example due to an unsupported format, will be
+        ignored and a later call to `buffer` or `buffer_async` will
+        throw an exception.
+        """
+        cdef vector[string] std_names = names
+        cdef vector[alure.StringView] alure_names
+        cdef alure.StringView* alure_name
+        for name in std_names:
+            alure_name = new alure.StringView(name)
+            alure_names.push_back(deref(alure_name))
+            self.precached_buffers.push_back(deref(alure_name))
+        self.impl.precache_buffers_async(alure_names)
+
+    # TODO: create_buffer_async_from
+    # TODO: find_buffer_async
 
     @setter
     def doppler_factor(self, value: float) -> None:
