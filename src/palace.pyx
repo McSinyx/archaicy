@@ -78,6 +78,7 @@ __all__ = [
 from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
 from enum import Enum, auto
+from contextlib import contextmanager
 from io import DEFAULT_BUFFER_SIZE
 from operator import itemgetter
 from types import TracebackType
@@ -659,11 +660,11 @@ cdef class Context:
     def async_wake_interval(self, value: int) -> None:
         self.impl.set_async_wake_interval(milliseconds(value))
 
-    # TODO: document that methods below require context to be current
-
     def is_supported(self, channel_config: str, sample_type: str) -> bool:
         """Return if the channel configuration and sample type
         are supported by the context.
+
+        This method require the context to be current.
 
         See Also
         --------
@@ -680,6 +681,8 @@ cdef class Context:
         If the `AL_SOFT_source_resampler` extension is unsupported
         this will be an empty list, otherwise there would be
         at least one entry.
+
+        This method require the context to be current.
         """
         cdef alure.ArrayView[string] resamplers
         resamplers = self.impl.get_available_resamplers()
@@ -695,6 +698,8 @@ cdef class Context:
         If you try to access the resampler list with this index
         without extension, undefined behavior will occur
         (accessing an out of bounds array index).
+
+        This method require the context to be current.
         """
         return self.impl.get_default_resampler_index()
 
@@ -712,7 +717,10 @@ cdef class Context:
         loaded, for example due to an unsupported format, will be
         ignored and a later call to `buffer` or `buffer_async` will
         throw an exception.
+
+        This method require the context to be current.
         """
+        # FIXME: Running this function still leads to segfault
         cdef vector[string] std_names = names
         cdef vector[alure.StringView] alure_names
         cdef alure.StringView* alure_name
@@ -721,9 +729,6 @@ cdef class Context:
             alure_names.push_back(deref(alure_name))
             self.precached_buffers.push_back(deref(alure_name))
         self.impl.precache_buffers_async(alure_names)
-
-    # TODO: create_buffer_async_from
-    # TODO: find_buffer_async
 
     @setter
     def doppler_factor(self, value: float) -> None:
@@ -746,8 +751,7 @@ cdef class Context:
 
     @setter
     def distance_model(self, value: DistanceModel) -> None:
-        """The distance model used to attenuate sources
-        given their distance from the listener.
+        """The model for source attenuation based on distance.
 
         The default, `DistanceModel.InverseClamped`, provides a realistic
         l/r reduction in volume (that is, every doubling of distance
@@ -2613,23 +2617,23 @@ class DistanceModel(Enum):
     INVERSE = auto()
     LINEAR = auto()
     EXPONENT = auto()
-    NO = auto()
+    NONE = auto()
 
 
 cdef alure.DistanceModel to_distance_model(int model_id) except +:
     """Converts distance model enum."""
     if model_id == DistanceModel.INVERSE_CLAMPED:
-        return alure.DistanceModel.InverseClamped
+        return alure.DistanceModel.INVERSE_CLAMPED
     elif model_id == DistanceModel.LINEAR_CLAMPED:
-        return alure.DistanceModel.LinearClamped
+        return alure.DistanceModel.LINEAR_CLAMPED
     elif model_id == DistanceModel.EXPONENT_CLAMPED:
-        return alure.DistanceModel.ExponentClamped
+        return alure.DistanceModel.EXPONENT_CLAMPED
     elif model_id == DistanceModel.INVERSE:
-        return alure.DistanceModel.Inverse
+        return alure.DistanceModel.INVERSE
     elif model_id == DistanceModel.LINEAR:
-        return alure.DistanceModel.Linear
+        return alure.DistanceModel.LINEAR
     elif model_id == DistanceModel.EXPONENT:
-        return alure.DistanceModel.Exponent
-    elif model_id == DistanceModel.NO:
-        return alure.DistanceModel.No
+        return alure.DistanceModel.EXPONENT
+    elif model_id == DistanceModel.NONE:
+        return alure.DistanceModel.NONE
     raise ValueError(f'Invalid DistanceModel ID: {model_id}')
