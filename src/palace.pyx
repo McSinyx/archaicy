@@ -629,7 +629,6 @@ cdef class Context:
 
         The context must not be current when this is called.
         """
-        self.precached_buffers.clear()
         self.impl.destroy()
 
     def start_batch(self) -> None:
