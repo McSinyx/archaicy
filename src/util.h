@@ -128,11 +128,7 @@ namespace palace
   inline alure::FilterParams
   make_filter_params (std::vector<float> params) noexcept
   {
-    alure::FilterParams filter_params;
-    filter_params.mGain = params[0];
-    filter_params.mGainHF = params[1];
-    filter_params.mGainLF = params[2];
-    return filter_params;
+    return alure::FilterParams {params[0], params[1], params[2]};
   }
 
   inline std::vector<float>
