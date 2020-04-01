@@ -124,6 +124,15 @@ namespace palace
     return attributes;
   }
 
+  inline alure::FilterParams&
+  make_filter_params (std::tuple<float, float, float> params) noexcept
+  {
+    alure::FilterParams filter_params;
+    filter_params.mGain = params.get<0>();
+    filter_params.mGainHF = params.get<1>();
+    filter_params.mGainLF = params.get<2>();
+  }
+
   inline std::vector<float>
   from_vector3 (alure::Vector3 v) noexcept
   { return std::vector<float> {v[0], v[1], v[2]}; }

@@ -31,5 +31,6 @@ cdef extern from 'util.h' namespace 'palace' nogil:
     cdef const map[string, ChannelConfig] CHANNEL_CONFIGS
     cdef vector[string] reverb_presets()
     cdef vector[AttributePair] mkattrs(vector[pair[int, int]])
+    cdef FilterParams& make_filter_params(tuple[float, float, float])
     cdef vector[float] from_vector3(Vector3)
     cdef Vector3 to_vector3(vector[float])
