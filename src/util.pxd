@@ -1,5 +1,6 @@
 # Helper functions and mapping
 # Copyright (C) 2020  Nguyễn Gia Phong
+# Copyright (C) 2020  Ngô Ngọc Đức Huy
 #
 # This file is part of palace.
 #
