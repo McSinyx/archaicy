@@ -41,13 +41,12 @@ def play(files: Iterable[str], device: str) -> None:
             decoder.play(CHUNK_LEN, QUEUE_SIZE, src)
             print('Playing: ', filename)
             for i in takewhile(lambda i: src.playing, count()):
-                print('Offset:', round(src.offset_seconds),
-                      '-',
+                print('Offset:', round(src.offset_seconds), '-',
                       'Latency:', src.latency//10**6, 'ms',
                       end='\r', flush=True)
                 sleep(PERIOD)
                 ctx.update()
-        print()
+            print()
 
 
 if __name__ == '__main__':
