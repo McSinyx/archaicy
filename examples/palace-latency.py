@@ -26,7 +26,7 @@ from typing import Iterable
 from palace import Context, Device, Source, decode
 
 CHUNK_LEN: int = 12000
-QUEUE_SIZE: int = 40
+QUEUE_SIZE: int = 4
 PERIOD: float = 0.01
 
 
