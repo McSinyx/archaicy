@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Example for latency checking
-# Copyright (C) 2020 Ngô Ngọc Đức Huy
+# Copyright (C) 2020  Ngô Ngọc Đức Huy
 #
 # This file is part of palace.
 #
