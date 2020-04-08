@@ -19,7 +19,9 @@
 
 """This pytest module tries to test the correctness of the class Context."""
 
-from palace import current_context, Context, MessageHandler
+from palace import current_context, Context, Source, MessageHandler
+
+from fmath import isclose
 
 
 def test_with_context(device):
@@ -48,3 +50,17 @@ def test_message_handler(device):
     assert context.message_handler is message_handler_test
     with context:
         assert current_context().message_handler is context.message_handler
+
+
+def test_async_wake_interval(device):
+    """Test read-write property async_wake_interval."""
+    with Context(device) as context:
+        context.async_wake_interval = 42
+        assert isclose(context.async_wake_interval, 42)
+
+
+def test_droppler_factor(device):
+    """Test write property doppler_factor."""
+    with Context(device) as context, Source(context) as source:
+        context.doppler_factor = 4/9
+        assert isclose(source.doppler_factor, 4/9)

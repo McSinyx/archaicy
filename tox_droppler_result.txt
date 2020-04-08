@@ -1,0 +1,42 @@
+py inst-nodeps: /home/meteora/Documents/Palace/palace/.tox/.tmp/package/1/palace-0.1.1.tar.gz
+py installed: attrs==19.3.0,coverage==5.0.4,Cython==0.29.16,entrypoints==0.3,flake8==3.7.9,importlib-metadata==1.6.0,mccabe==0.6.1,more-itertools==8.2.0,packaging==20.3,palace==0.1.1,pluggy==0.13.1,py==1.8.1,pycodestyle==2.5.0,pyflakes==2.1.1,pyparsing==2.4.7,pytest==5.4.1,pytest-cov==2.8.1,six==1.14.0,wcwidth==0.1.9,zipp==3.1.0
+py run-test-pre: PYTHONHASHSEED='3661117012'
+py run-test: commands[0] | flake8
+py run-test: commands[1] | pytest
+============================= test session starts ==============================
+platform linux -- Python 3.6.9, pytest-5.4.1, py-1.8.1, pluggy-0.13.1
+cachedir: .tox/py/.pytest_cache
+rootdir: /home/meteora/Documents/Palace/palace, inifile: tox.ini
+plugins: cov-2.8.1
+collected 27 items
+
+tests/test_context.py ....F                                              [ 18%]
+tests/test_source.py ......................                              [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_droppler_factor _____________________________
+
+device = Device('Built-in Audio Analog Stereo')
+
+    def test_droppler_factor(device):
+        """Test write property doppler_factor."""
+        with Context(device) as context, Source(context) as source:
+            context.doppler_factor = 4/9
+>           assert isclose(source.doppler_factor, 4/9)
+E           assert False
+E            +  where False = isclose(1.0, (4 / 9))
+E            +    where 1.0 = <palace.Source object at 0x7f1477e18930>.doppler_factor
+
+tests/test_context.py:66: AssertionError
+
+----------- coverage: platform linux, python 3.6.9-final-0 -----------
+Name             Stmts   Miss  Cover
+------------------------------------
+src/palace.pyx     884    432    51%
+
+=========================== short test summary info ============================
+FAILED tests/test_context.py::test_droppler_factor - assert False
+========================= 1 failed, 26 passed in 0.23s =========================
+ERROR: InvocationError for command /home/meteora/Documents/Palace/palace/.tox/py/bin/pytest (exited with code 1)
+___________________________________ summary ____________________________________
+ERROR:   py: commands failed
