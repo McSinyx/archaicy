@@ -24,15 +24,43 @@ from math import pi, sin
 from random import random
 from sys import stderr
 from time import sleep
-from typing import Iterable
+from typing import Iterable, Tuple
 
-from palace import Buffer, Context, Device, Source
+from palace import Buffer, Context, BaseDecoder, Device, Source
 
 CHUNK_LEN: int = 12000
 QUEUE_SIZE: int = 4
 PERIOD: float = 0.01
 WAVE_TYPES: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
                              'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
+
+
+class DataDecoder(BaseDecoder):
+    def __init__(self):
+        pass
+
+    @BaseDecoder.frequency.getter
+    def frequency(self) -> int: return 44100
+
+    @BaseDecoder.channel_config.getter
+    def channel_config(self) -> str:
+        return 'Mono'
+
+    @BaseDecoder.sample_type.getter
+    def sample_type(self) -> str:
+        return 'Float32'
+
+    @BaseDecoder.length.getter
+    def length(self) -> int: return 0
+
+    def seek(self, pos: int) -> bool: return False
+
+    @BaseDecoder.loop_points.getter
+    def loop_points(self) -> Tuple[int, int]: return 0, 0
+
+    def read(self, count: int) -> bytes:
+        self.pos = count
+        return count
 
 
 class TypePrinter(Action):
@@ -64,7 +92,8 @@ def create_wave(wave_type: str, freq: int, srate: int) -> Iterable[float]:
             apply_sin(data, 2 / pi * (1 if i % 2 else -1) / i, srate, freq * i)
     elif wave_type == 'TRIANGLE':
         for i in range(1, lim, 2):
-            apply_sin(data, 2 / pi * (1 if i / 2 % 2 else -1) / i, srate, freq * i)
+            apply_sin(data, 2 / pi * (1 if i / 2 % 2 else -1) / i,
+                      srate, freq * i)
     elif wave_type == 'IMPULSE':
         for i in range(srate):
             data[i] = 0.0 if i % (srate/freq) else 1.0
@@ -85,7 +114,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='SINE', nargs='+', help='audio files')
+    parser.add_argument('-w', '--waveform', default='SINE', nargs='+',
+                        help='audio files')
     parser.add_argument('-d', '--device', default='', help='device name')
     args = parser.parse_args()
     play(args.device, args.waveform)
