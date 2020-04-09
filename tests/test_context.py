@@ -1,6 +1,7 @@
 # Source pytest module
 # Copyright (C) 2020  Ngô Ngọc Đức Huy
 # Copyright (C) 2020  Nguyễn Gia Phong
+# Copyright (C) 2020  Ngô Xuân Minh
 #
 # This file is part of palace.
 #
@@ -19,9 +20,7 @@
 
 """This pytest module tries to test the correctness of the class Context."""
 
-from palace import current_context, Context, Source, MessageHandler
-
-from fmath import isclose
+from palace import current_context, Context, DistanceModel, MessageHandler
 
 
 def test_with_context(device):
@@ -56,11 +55,50 @@ def test_async_wake_interval(device):
     """Test read-write property async_wake_interval."""
     with Context(device) as context:
         context.async_wake_interval = 42
-        assert isclose(context.async_wake_interval, 42)
+        assert context.async_wake_interval == 42
 
 
-def test_droppler_factor(device):
+# THIS DOES NOT WORK, PLEASE HELP!
+
+# def test_is_supported(device):
+#     with Context(device) as context:
+#         assert context == current_context()
+#         with context:
+#             MONO42 = context.is_supported("MONO", "42")
+
+
+def test_available_resamplers(device):
+    """Test available_resamplers"""
+    with Context(device) as context:
+        assert context == current_context()
+        assert len(context.available_resamplers) >= 0
+
+
+def test_default_resampler_index(device):
+    """Test default_resampler_index"""
+    with Context(device) as context:
+        assert context == current_context()
+        assert context.default_resampler_index >= 0
+
+
+def test_doppler_factor(device):
     """Test write property doppler_factor."""
-    with Context(device) as context, Source(context) as source:
+    with Context(device) as context:
         context.doppler_factor = 4/9
-        assert isclose(source.doppler_factor, 4/9)
+
+
+def test_speed_of_sound(device):
+    """Test write property speed_of_sound."""
+    with Context(device) as context:
+        context.speed_of_sound = 5/7
+
+
+def test_distance_model(device):
+    with Context(device) as context:
+        context.distance_model = DistanceModel.INVERSE_CLAMPED
+        context.distance_model = DistanceModel.LINEAR_CLAMPED
+        context.distance_model = DistanceModel.EXPONENT_CLAMPED
+        context.distance_model = DistanceModel.INVERSE
+        context.distance_model = DistanceModel.LINEAR
+        context.distance_model = DistanceModel.EXPONENT
+        context.distance_model = DistanceModel.NONE
