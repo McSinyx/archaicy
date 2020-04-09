@@ -21,20 +21,19 @@ from argparse import Action, ArgumentParser
 from array import array
 from math import pi, sin
 from random import random
-from time import sleep
 from typing import Iterable, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
 PERIOD: float = 0.025
 WAVEFORMS: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
-                             'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
+                            'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
 
 
 class ToneGenerator(BaseDecoder):
     def __init__(self, waveform: str):
         self.func = lambda frame: waveform(frame/self.frequency,
-                                                      frequency)
+                                           self.frequency)
 
     @BaseDecoder.frequency.getter
     def frequency(self) -> int: return 44100
@@ -102,12 +101,12 @@ def create_wave(waveform: str, freq: int, srate: int) -> Iterable[float]:
     return data
 
 
-def play(device: str, waveform: str) -> None:
+def play(device: str, waveform: str, duration: int) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform)
+        _ = duration  # use it later
         buf = Buffer.from_decoder(dec, 'tonegen')
         buf.play()
-
 
 
 if __name__ == '__main__':
@@ -117,5 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--waveform', default='SINE', nargs='+',
                         help='audio files')
     parser.add_argument('-d', '--device', default='', help='device name')
+    parser.add_argument('-l', '--duration', default=30, type=int,
+                        help='duration, in second')
     args = parser.parse_args()
-    play(args.device, args.waveform)
+    play(args.device, args.waveform, args.duration)
