@@ -18,25 +18,23 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import Action, ArgumentParser
-from itertools import count, takewhile
-from enum import auto, Enum
 from math import pi, sin
 from random import random
-from sys import stderr
 from time import sleep
 from typing import Iterable, Tuple
 
-from palace import Buffer, Context, BaseDecoder, Device, Source
+from numpy import float32
 
-CHUNK_LEN: int = 12000
-QUEUE_SIZE: int = 4
-PERIOD: float = 0.01
+from palace import Buffer, Context, BaseDecoder, Device
+
+PERIOD: float = 0.025
 WAVE_TYPES: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
                              'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
 
 
 class DataDecoder(BaseDecoder):
-    def __init__(self):
+    def __init__(self, data: Iterable[float]):
+        self.data = data
         pass
 
     @BaseDecoder.frequency.getter
@@ -59,8 +57,7 @@ class DataDecoder(BaseDecoder):
     def loop_points(self) -> Tuple[int, int]: return 0, 0
 
     def read(self, count: int) -> bytes:
-        self.pos = count
-        return count
+        return float32(self.data[:count]).tobytes()
 
 
 class TypePrinter(Action):
@@ -80,7 +77,6 @@ def apply_sin(data: Iterable[float], g: float,
 
 def create_wave(wave_type: str, freq: int, srate: int) -> Iterable[float]:
     data = [0] * srate
-    buf = Buffer()
     lim = int(srate/2/freq)
     if wave_type == 'SINE':
         apply_sin(data, pi, srate, freq)
@@ -106,8 +102,15 @@ def create_wave(wave_type: str, freq: int, srate: int) -> Iterable[float]:
     return data
 
 
-def play(device: Device, waveform: str = 'sine') -> None:
-    pass
+def play(device: Device, waveform: str) -> None:
+    with Device(device) as dev, Context(dev):
+        data: Iterable[float] = create_wave(waveform, 44100, 1)
+        dec = DataDecoder(data)
+        with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
+            print('Generating waveform:', waveform)
+            while src.playing:
+                sleep(PERIOD)
+            print()
 
 
 if __name__ == '__main__':
