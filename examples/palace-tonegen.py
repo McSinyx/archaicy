@@ -18,24 +18,23 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import Action, ArgumentParser
+from array import array
 from math import pi, sin
 from random import random
 from time import sleep
 from typing import Iterable, Tuple
 
-from numpy import float32
-
 from palace import Buffer, Context, BaseDecoder, Device
 
 PERIOD: float = 0.025
-WAVE_TYPES: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
+WAVEFORMS: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
                              'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
 
 
-class DataDecoder(BaseDecoder):
-    def __init__(self, data: Iterable[float]):
-        self.data = data
-        pass
+class ToneGenerator(BaseDecoder):
+    def __init__(self, waveform: str):
+        self.func = lambda frame: waveform(frame/self.frequency,
+                                                      frequency)
 
     @BaseDecoder.frequency.getter
     def frequency(self) -> int: return 44100
@@ -57,14 +56,15 @@ class DataDecoder(BaseDecoder):
     def loop_points(self) -> Tuple[int, int]: return 0, 0
 
     def read(self, count: int) -> bytes:
-        return float32(self.data[:count]).tobytes()
+        stop = min(self.start + count, self.length)
+        data = array('f', map(self.func, range(self.start, stop)))
+        self.start = stop
+        return data.tobytes()
 
 
 class TypePrinter(Action):
     def __call__(self, parser: ArgumentParser, *args, **kwargs) -> None:
-        print('Available waveform types:')
-        for t in WAVE_TYPES:
-            print(t)
+        print('Available waveform types:', *WAVEFORMS, sep='\n')
         parser.exit()
 
 
@@ -75,42 +75,39 @@ def apply_sin(data: Iterable[float], g: float,
         data[i] += sin((i/samps_per_cycle) % 1 * 2 * pi) * g
 
 
-def create_wave(wave_type: str, freq: int, srate: int) -> Iterable[float]:
+def create_wave(waveform: str, freq: int, srate: int) -> Iterable[float]:
     data = [0] * srate
     lim = int(srate/2/freq)
-    if wave_type == 'SINE':
+    if waveform == 'SINE':
         apply_sin(data, pi, srate, freq)
-    elif wave_type == 'SQUARE':
+    elif waveform == 'SQUARE':
         for i in range(1, lim, 2):
             apply_sin(data, 4 / pi * 1 / i, srate, freq * i)
-    elif wave_type == 'SAWTOOTH':
+    elif waveform == 'SAWTOOTH':
         for i in range(1, lim):
             apply_sin(data, 2 / pi * (1 if i % 2 else -1) / i, srate, freq * i)
-    elif wave_type == 'TRIANGLE':
+    elif waveform == 'TRIANGLE':
         for i in range(1, lim, 2):
             apply_sin(data, 2 / pi * (1 if i / 2 % 2 else -1) / i,
                       srate, freq * i)
-    elif wave_type == 'IMPULSE':
+    elif waveform == 'IMPULSE':
         for i in range(srate):
             data[i] = 0.0 if i % (srate/freq) else 1.0
     elif 'WHITE_NOISE':
         for i in range(srate):
             data[i] += random() - random()
     else:
-        print(f'{wave_type} not found, using the default value SINE:')
-        data = create_wave(wave_type, freq, srate)
+        print(f'{waveform} not found, using the default value SINE:')
+        data = create_wave(waveform, freq, srate)
     return data
 
 
-def play(device: Device, waveform: str) -> None:
+def play(device: str, waveform: str) -> None:
     with Device(device) as dev, Context(dev):
-        data: Iterable[float] = create_wave(waveform, 44100, 1)
-        dec = DataDecoder(data)
-        with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
-            print('Generating waveform:', waveform)
-            while src.playing:
-                sleep(PERIOD)
-            print()
+        dec = ToneGenerator(waveform)
+        buf = Buffer.from_decoder(dec, 'tonegen')
+        buf.play()
+
 
 
 if __name__ == '__main__':
