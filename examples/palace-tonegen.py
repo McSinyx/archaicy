@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Example for tone generator
+# Sample for tone generator
 # Copyright (C) 2020  Ngô Ngọc Đức Huy
 #
 # This file is part of palace.
@@ -25,14 +25,22 @@ from typing import Iterable, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
+from numpy import linspace
+from numpy.random import random_sample
+from scipy import signal
+
 PERIOD: float = 0.025
-WAVEFORMS: Iterable[str] = ['SINE', 'SQUARE', 'SAWTOOTH',
-                            'TRIANGLE', 'IMPULSE', 'WHITE_NOISE']
+WAVEFORMS = {'sine': sine,
+             'square': square,
+             'sawtooth': sawtooth,
+             'triangle': triangle,
+             'impulse': impulse,
+             'white noise': white_noise}
 
 
 class ToneGenerator(BaseDecoder):
     def __init__(self, waveform: str):
-        self.func = lambda frame: waveform(frame/self.frequency,
+        self.func = lambda frame: WAVEFORMS[waveform](frame/self.frequency,
                                            self.frequency)
 
     @BaseDecoder.frequency.getter
@@ -67,38 +75,35 @@ class TypePrinter(Action):
         parser.exit()
 
 
-def apply_sin(data: Iterable[float], g: float,
-              srate: int, freq: int) -> None:
-    samps_per_cycle: float = srate / freq
-    for i in range(srate):
-        data[i] += sin((i/samps_per_cycle) % 1 * 2 * pi) * g
-
-
-def create_wave(waveform: str, freq: int, srate: int) -> Iterable[float]:
-    data = [0] * srate
-    lim = int(srate/2/freq)
-    if waveform == 'SINE':
-        apply_sin(data, pi, srate, freq)
-    elif waveform == 'SQUARE':
-        for i in range(1, lim, 2):
-            apply_sin(data, 4 / pi * 1 / i, srate, freq * i)
-    elif waveform == 'SAWTOOTH':
-        for i in range(1, lim):
-            apply_sin(data, 2 / pi * (1 if i % 2 else -1) / i, srate, freq * i)
-    elif waveform == 'TRIANGLE':
-        for i in range(1, lim, 2):
-            apply_sin(data, 2 / pi * (1 if i / 2 % 2 else -1) / i,
-                      srate, freq * i)
-    elif waveform == 'IMPULSE':
-        for i in range(srate):
-            data[i] = 0.0 if i % (srate/freq) else 1.0
-    elif 'WHITE_NOISE':
-        for i in range(srate):
-            data[i] += random() - random()
-    else:
-        print(f'{waveform} not found, using the default value SINE:')
-        data = create_wave(waveform, freq, srate)
+def sine(time: int, sample_rate: int) -> Iterable[float]:
+    """Generate sinusoidal signal."""
+    t = linspace(0, time, time * sample_rate, endpoint=False)
+    data = sin(t)
     return data
+
+
+def square(time: int, sample_rate: int) -> Iterable[float]:
+    """Generate square signal."""
+    t = linspace(0, time, time * sample_rate, endpoint=False)
+    data = signal.square(2 * pi * 5 * t)
+
+
+def sawtooth(time: int, sample_rate: int) -> Iterable[float]:
+    t = linspace(0, time, time * sample_rate, endpoint=False)
+    data = signal.sawtooth(2 * pi * 5 * t)
+
+
+def triangle(time: int, sample_rate: int) -> Iterable[float]:
+    pass
+
+
+def impulse(time: int, sample_rate: int) -> Iterable[float]:
+    pass
+
+
+def white_noise(time: int, sample_rate: int) -> Iterable[float]:
+    return random_sample((1, time * sample_rate))
+    
 
 
 def play(device: str, waveform: str, duration: int) -> None:
