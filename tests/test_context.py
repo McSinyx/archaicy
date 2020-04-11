@@ -21,6 +21,8 @@
 """This pytest module tries to test the correctness of the class Context."""
 
 from palace import current_context, Context, DistanceModel, MessageHandler
+from pytest import raises
+
 
 
 def test_with_context(device):
@@ -58,28 +60,17 @@ def test_async_wake_interval(device):
         assert context.async_wake_interval == 42
 
 
-# THIS DOES NOT WORK, PLEASE HELP!
-
-# def test_is_supported(device):
-#     with Context(device) as context:
-#         assert context == current_context()
-#         with context:
-#             MONO42 = context.is_supported("MONO", "42")
-
-
 def test_available_resamplers(device):
-    """Test available_resamplers"""
+    """Test return values available_resamplers"""
     with Context(device) as context:
-        assert context == current_context()
         assert len(context.available_resamplers) >= 0
 
 
 def test_default_resampler_index(device):
-    """Test default_resampler_index"""
+    """Test return values default_resampler_index"""
     with Context(device) as context:
-        assert context == current_context()
         assert context.default_resampler_index >= 0
-
+        assert len(context.available_resamplers) > context.default_resampler_index
 
 def test_doppler_factor(device):
     """Test write property doppler_factor."""
@@ -94,6 +85,7 @@ def test_speed_of_sound(device):
 
 
 def test_distance_model(device):
+    """Test preset values distance_model"""
     with Context(device) as context:
         context.distance_model = DistanceModel.INVERSE_CLAMPED
         context.distance_model = DistanceModel.LINEAR_CLAMPED
