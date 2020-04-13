@@ -76,7 +76,8 @@ class TypePrinter(Action):
         parser.exit()
 
 
-def play(device: str, waveform: str, duration: float, frequency: float) -> None:
+def play(device: str, waveform: str,
+         duration: float, frequency: float) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
         with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
@@ -89,7 +90,8 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
     parser.add_argument('-w', '--waveform', default='white-noise', type=str,
-                        help='waveform to be generated, default to white-noise')
+                        help='waveform to be generated,'
+                             'default to white-noise')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=5.0, type=float,
                         help='duration, in second')
