@@ -87,7 +87,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='sine', nargs=1, type=str,
+    parser.add_argument('-w', '--waveform', default='white-noise', type=str,
                         help='waveform to be generated')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=5.0, type=float,
@@ -95,4 +95,5 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--frequency', default=44100, type=int,
                         help='frequency for the wave')
     args = parser.parse_args()
+    print(args.waveform, type(args.waveform))
     play(args.device, args.waveform, args.duration, args.frequency)
