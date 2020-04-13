@@ -25,7 +25,6 @@ from time import sleep
 from typing import Callable, Dict, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
-
 from numpy import arange, float32, ndarray, sin, vectorize
 from scipy.signal import sawtooth, square, unit_impulse
 
