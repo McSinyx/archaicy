@@ -78,8 +78,8 @@ class TypePrinter(Action):
 def play(device: str, waveform: str, duration: int, frequency: int) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
-        buf = Buffer.from_decoder(dec, 'tonegen')
-        buf.play()
+        with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
+            _ = src
 
 
 if __name__ == '__main__':
