@@ -26,22 +26,22 @@ from typing import Iterable, Tuple
 from palace import Buffer, Context, BaseDecoder, Device
 
 from numpy import linspace
-from numpy.random import random_sample
-from scipy import signal
+from numpy.random import random
+from scipy.signal import sawtooth, square, unit_impulse
 
-PERIOD: float = 0.025
-WAVEFORMS = {'sine': sine,
+frequency: float = 44100
+WAVEFORMS = {'sine': sin,
              'square': square,
              'sawtooth': sawtooth,
-             'triangle': triangle,
-             'impulse': impulse,
-             'white noise': white_noise}
+             'triangle': lambda time: return sawtooth(time, 0.5),
+             'impulse': lambda time: return unit_impulse(time * frequency % 1),
+             'white noise': random}
 
 
 class ToneGenerator(BaseDecoder):
     def __init__(self, waveform: str):
         self.func = lambda frame: WAVEFORMS[waveform](frame/self.frequency,
-                                           self.frequency)
+                                                      frequency)
 
     @BaseDecoder.frequency.getter
     def frequency(self) -> int: return 44100
@@ -75,40 +75,9 @@ class TypePrinter(Action):
         parser.exit()
 
 
-def sine(time: int, sample_rate: int) -> Iterable[float]:
-    """Generate sinusoidal signal."""
-    t = linspace(0, time, time * sample_rate, endpoint=False)
-    data = sin(t)
-    return data
-
-
-def square(time: int, sample_rate: int) -> Iterable[float]:
-    """Generate square signal."""
-    t = linspace(0, time, time * sample_rate, endpoint=False)
-    data = signal.square(2 * pi * 5 * t)
-
-
-def sawtooth(time: int, sample_rate: int) -> Iterable[float]:
-    t = linspace(0, time, time * sample_rate, endpoint=False)
-    data = signal.sawtooth(2 * pi * 5 * t)
-
-
-def triangle(time: int, sample_rate: int) -> Iterable[float]:
-    pass
-
-
-def impulse(time: int, sample_rate: int) -> Iterable[float]:
-    pass
-
-
-def white_noise(time: int, sample_rate: int) -> Iterable[float]:
-    return random_sample((1, time * sample_rate))
-    
-
-
-def play(device: str, waveform: str, duration: int) -> None:
+def play(device: str, waveform: str, duration: int, frequency: int) -> None:
     with Device(device) as dev, Context(dev):
-        dec = ToneGenerator(waveform)
+        dec = ToneGenerator(waveform, duration, frequency)
         _ = duration  # use it later
         buf = Buffer.from_decoder(dec, 'tonegen')
         buf.play()
@@ -118,8 +87,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='SINE', nargs='+',
-                        help='audio files')
+    parser.add_argument('-w', '--waveform', default='SINE', nargs=1,
+                        help='waveform to be generated')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=30, type=int,
                         help='duration, in second')
