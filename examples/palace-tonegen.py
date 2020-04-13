@@ -20,20 +20,20 @@
 from argparse import Action, ArgumentParser
 from array import array
 from math import sin
+from random import random
 from typing import Callable, Dict, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
-from numpy.random import random
-from scipy.signal import sawtooth, square, unit_impulse
+from scipy.signal import sawtooth, square
 
 WAVEFORMS: Dict[str, Callable[[float], float]] = {
     'sine': sin,
     'square': square,
     'sawtooth': sawtooth,
     'triangle': lambda time: sawtooth(time, 0.5),
-    'impulse': unit_impulse,
-    'white-noise': random}
+    'impulse': lambda time: 1 if time == 0 else 0,
+    'white-noise': lambda time: random()}
 
 
 class ToneGenerator(BaseDecoder):
@@ -79,14 +79,15 @@ def play(device: str, waveform: str, duration: float, frequency: int) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
         with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
-            _ = src
+            while src.playing:
+                pass
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='sine', nargs=1,
+    parser.add_argument('-w', '--waveform', default='sine', nargs=1, type=str,
                         help='waveform to be generated')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=5.0, type=float,
