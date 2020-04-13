@@ -20,19 +20,20 @@
 from argparse import Action, ArgumentParser
 from array import array
 from math import sin
-from typing import Tuple
+from typing import Callable, Dict, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
 from numpy.random import random
 from scipy.signal import sawtooth, square, unit_impulse
 
-WAVEFORMS = {'sine': sin,
-             'square': square,
-             'sawtooth': sawtooth,
-             'triangle': lambda time: sawtooth(time, 0.5),
-             'impulse': unit_impulse,
-             'white-noise': random}
+WAVEFORMS: Dict[str, Callable[[float], float]] = {
+    'sine': sin,
+    'square': square,
+    'sawtooth': sawtooth,
+    'triangle': lambda time: sawtooth(time, 0.5),
+    'impulse': unit_impulse,
+    'white-noise': random}
 
 
 class ToneGenerator(BaseDecoder):
