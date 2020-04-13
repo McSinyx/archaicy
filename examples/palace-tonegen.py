@@ -18,28 +18,29 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import Action, ArgumentParser
-from array import array
-from math import pi, sin
+from functools import partial
+from math import pi
 from random import random
 from typing import Callable, Dict, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
-from scipy.signal import sawtooth, square
+from numpy import arange, float32, ndarray, sin, vectorize
+from scipy.signal import sawtooth, square, unit_impulse
 
-WAVEFORMS: Dict[str, Callable[[float], float]] = {
+WAVEFORMS: Dict[str, Callable[[ndarray], ndarray]] = {
     'sine': sin,
     'square': square,
     'sawtooth': sawtooth,
-    'triangle': lambda time: sawtooth(time, 0.5),
-    'impulse': lambda time: 1 if time == 0 else 0,
-    'white-noise': lambda time: random() * 2 - 1}
+    'triangle': partial(sawtooth, 0.5),
+    'impulse': lambda frames: unit_impulse(len(frames)),
+    'white-noise': vectorize(lambda time: random())}
 
 
 class ToneGenerator(BaseDecoder):
     def __init__(self, waveform: str, duration: float, frequency: float):
-        self.func = lambda frame: WAVEFORMS[waveform](
-            frame / self.frequency * pi * 2 * frequency)
+        self.func = lambda frames: WAVEFORMS[waveform](
+            frames / self.frequency * pi * 2 * frequency)
         self.duration = duration
         self.start = 0
 
@@ -64,9 +65,9 @@ class ToneGenerator(BaseDecoder):
 
     def read(self, count: int) -> bytes:
         stop = min(self.start + count, self.length)
-        data = array('f', map(self.func, range(self.start, stop)))
+        data = self.func(arange(self.start, stop))
         self.start = stop
-        return data.tobytes()
+        return data.astype(float32).tobytes()
 
 
 class TypePrinter(Action):
