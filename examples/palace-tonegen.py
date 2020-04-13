@@ -29,7 +29,6 @@ from numpy import linspace
 from numpy.random import random
 from scipy.signal import sawtooth, square, unit_impulse
 
-frequency: float = 44100
 WAVEFORMS = {'sine': sin,
              'square': square,
              'sawtooth': sawtooth,
@@ -39,9 +38,10 @@ WAVEFORMS = {'sine': sin,
 
 
 class ToneGenerator(BaseDecoder):
-    def __init__(self, waveform: str):
+    def __init__(self, waveform: str, duration: int, frequency: int):
         self.func = lambda frame: WAVEFORMS[waveform](frame/self.frequency,
                                                       frequency)
+        self.duration = duration
 
     @BaseDecoder.frequency.getter
     def frequency(self) -> int: return 44100
@@ -55,7 +55,7 @@ class ToneGenerator(BaseDecoder):
         return 'Float32'
 
     @BaseDecoder.length.getter
-    def length(self) -> int: return 0
+    def length(self) -> int: return self.duration
 
     def seek(self, pos: int) -> bool: return False
 
@@ -78,7 +78,6 @@ class TypePrinter(Action):
 def play(device: str, waveform: str, duration: int, frequency: int) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
-        _ = duration  # use it later
         buf = Buffer.from_decoder(dec, 'tonegen')
         buf.play()
 
