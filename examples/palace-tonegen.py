@@ -19,20 +19,18 @@
 
 from argparse import Action, ArgumentParser
 from array import array
-from math import pi, sin
-from random import random
-from typing import Iterable, Tuple
+from math import sin
+from typing import Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
 
-from numpy import linspace
 from numpy.random import random
 from scipy.signal import sawtooth, square, unit_impulse
 
 WAVEFORMS = {'sine': sin,
              'square': square,
              'sawtooth': sawtooth,
-             'triangle': lambda time: return sawtooth(time, 0.5),
+             'triangle': lambda time: sawtooth(time, 0.5),
              'impulse': unit_impulse,
              'white noise': random}
 
