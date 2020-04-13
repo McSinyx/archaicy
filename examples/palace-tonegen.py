@@ -19,7 +19,7 @@
 
 from argparse import Action, ArgumentParser
 from array import array
-from math import sin
+from math import pi, sin
 from random import random
 from typing import Callable, Dict, Tuple
 
@@ -33,13 +33,13 @@ WAVEFORMS: Dict[str, Callable[[float], float]] = {
     'sawtooth': sawtooth,
     'triangle': lambda time: sawtooth(time, 0.5),
     'impulse': lambda time: 1 if time == 0 else 0,
-    'white-noise': lambda time: random()}
+    'white-noise': lambda time: random() * 2 - 1}
 
 
 class ToneGenerator(BaseDecoder):
-    def __init__(self, waveform: str, duration: float, frequency: int):
+    def __init__(self, waveform: str, duration: float, frequency: float):
         self.func = lambda frame: WAVEFORMS[waveform](
-            frame/self.frequency/frequency)
+            frame / self.frequency * pi * 2 * frequency)
         self.duration = duration
         self.start = 0
 
@@ -75,7 +75,7 @@ class TypePrinter(Action):
         parser.exit()
 
 
-def play(device: str, waveform: str, duration: float, frequency: int) -> None:
+def play(device: str, waveform: str, duration: float, frequency: float) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
         with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
@@ -88,12 +88,11 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
     parser.add_argument('-w', '--waveform', default='white-noise', type=str,
-                        help='waveform to be generated')
+                        help='waveform to be generated, default to white-noise')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=5.0, type=float,
                         help='duration, in second')
-    parser.add_argument('-f', '--frequency', default=44100, type=int,
-                        help='frequency for the wave')
+    parser.add_argument('-f', '--frequency', default=440.0, type=float,
+                        help='frequency for the wave in hertz, default to 440')
     args = parser.parse_args()
-    print(args.waveform, type(args.waveform))
     play(args.device, args.waveform, args.duration, args.frequency)
