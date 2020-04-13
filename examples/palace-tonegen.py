@@ -41,6 +41,7 @@ class ToneGenerator(BaseDecoder):
         self.func = lambda frame: WAVEFORMS[waveform](
             frame/self.frequency/frequency)
         self.duration = duration
+        self.start = 0
 
     @BaseDecoder.frequency.getter
     def frequency(self) -> int: return 44100
