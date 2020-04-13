@@ -33,7 +33,7 @@ WAVEFORMS = {'sine': sin,
              'square': square,
              'sawtooth': sawtooth,
              'triangle': lambda time: return sawtooth(time, 0.5),
-             'impulse':unit_impulse,
+             'impulse': unit_impulse,
              'white noise': random}
 
 
