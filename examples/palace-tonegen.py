@@ -21,6 +21,7 @@ from argparse import Action, ArgumentParser
 from functools import partial
 from math import pi
 from random import random
+from time import sleep
 from typing import Callable, Dict, Tuple
 
 from palace import Buffer, Context, BaseDecoder, Device
@@ -82,16 +83,15 @@ def play(device: str, waveform: str,
         dec = ToneGenerator(waveform, duration, frequency)
         with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
             while src.playing:
-                pass
+                sleep()
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='white-noise', type=str,
-                        help='waveform to be generated,'
-                             'default to white-noise')
+    parser.add_argument('-w', '--waveform', default='sine', type=str,
+                        help='waveform to be generated, default to sine')
     parser.add_argument('-d', '--device', default='', help='device name')
     parser.add_argument('-l', '--duration', default=5.0, type=float,
                         help='duration, in second')
