@@ -32,13 +32,13 @@ WAVEFORMS = {'sine': sin,
              'sawtooth': sawtooth,
              'triangle': lambda time: sawtooth(time, 0.5),
              'impulse': unit_impulse,
-             'white noise': random}
+             'white-noise': random}
 
 
 class ToneGenerator(BaseDecoder):
     def __init__(self, waveform: str, duration: float, frequency: int):
-        self.func = lambda frame: WAVEFORMS[waveform](frame/self.frequency,
-                                                      frequency)
+        self.func = lambda frame: WAVEFORMS[waveform](
+            frame/self.frequency/frequency)
         self.duration = duration
 
     @BaseDecoder.frequency.getter
