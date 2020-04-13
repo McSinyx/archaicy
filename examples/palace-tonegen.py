@@ -52,7 +52,7 @@ class ToneGenerator(BaseDecoder):
 
     @BaseDecoder.sample_type.getter
     def sample_type(self) -> str:
-        return 'Float32'
+        return '32-bit float'
 
     @BaseDecoder.length.getter
     def length(self) -> int: return int(self.duration * self.frequency)
