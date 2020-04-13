@@ -20,7 +20,7 @@
 
 """This pytest module tries to test the correctness of the class Context."""
 
-from palace import current_context, Context, MessageHandler
+from palace import current_context, distance_models, Context, MessageHandler
 from pytest import raises
 
 from math import inf
@@ -62,10 +62,10 @@ def test_async_wake_interval(device):
 
 
 def test_default_resampler_index(device):
-    """Test return values default_resampler_index"""
+    """Test return values default_resampler_index."""
     with Context(device) as context:
-        assert context.default_resampler_index >= 0
         index = context.default_resampler_index
+        assert index >= 0
         assert len(context.available_resamplers) > index
 
 
@@ -90,11 +90,7 @@ def test_speed_of_sound(device):
 
 
 def test_distance_model(device):
-    """Test preset values distance_model"""
-    distance_model = 'inverse clamped'
-    distance_model = 'linear clamped'
-    distance_model = 'exponent clamped'
-    distance_model = 'inverse'
-    distance_model = 'linear'
-    distance_model = 'exponent'
-    distance_model = 'none'
+    """Test preset values distance_model."""
+    with Context(device) as context:
+        for model in distance_models: context.distance_model = model
+        with raises(ValueError): context.distance_model = 'EYYYYLMAO'
