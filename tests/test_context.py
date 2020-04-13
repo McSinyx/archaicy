@@ -20,9 +20,10 @@
 
 """This pytest module tries to test the correctness of the class Context."""
 
-from palace import current_context, Context, DistanceModel, MessageHandler
+from palace import current_context, Context, MessageHandler
 from pytest import raises
 
+from math import inf
 
 
 def test_with_context(device):
@@ -60,37 +61,40 @@ def test_async_wake_interval(device):
         assert context.async_wake_interval == 42
 
 
-def test_available_resamplers(device):
-    """Test return values available_resamplers"""
-    with Context(device) as context:
-        assert len(context.available_resamplers) >= 0
-
-
 def test_default_resampler_index(device):
     """Test return values default_resampler_index"""
     with Context(device) as context:
         assert context.default_resampler_index >= 0
-        assert len(context.available_resamplers) > context.default_resampler_index
+        index = context.default_resampler_index
+        assert len(context.available_resamplers) > index
+
 
 def test_doppler_factor(device):
     """Test write property doppler_factor."""
     with Context(device) as context:
         context.doppler_factor = 4/9
+        context.doppler_factor = 9/4
+        context.doppler_factor = 0
+        context.doppler_factor = inf
+        with raises(ValueError): context.doppler_factor = -1
 
 
 def test_speed_of_sound(device):
     """Test write property speed_of_sound."""
     with Context(device) as context:
         context.speed_of_sound = 5/7
+        context.speed_of_sound = 7/5
+        with raises(ValueError): context.speed_of_sound = 0
+        context.speed_of_sound = inf
+        with raises(ValueError): context.speed_of_sound = -1
 
 
 def test_distance_model(device):
     """Test preset values distance_model"""
-    with Context(device) as context:
-        context.distance_model = DistanceModel.INVERSE_CLAMPED
-        context.distance_model = DistanceModel.LINEAR_CLAMPED
-        context.distance_model = DistanceModel.EXPONENT_CLAMPED
-        context.distance_model = DistanceModel.INVERSE
-        context.distance_model = DistanceModel.LINEAR
-        context.distance_model = DistanceModel.EXPONENT
-        context.distance_model = DistanceModel.NONE
+    distance_model = 'inverse clamped'
+    distance_model = 'linear clamped'
+    distance_model = 'exponent clamped'
+    distance_model = 'inverse'
+    distance_model = 'linear'
+    distance_model = 'exponent'
+    distance_model = 'none'
