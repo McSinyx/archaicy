@@ -38,7 +38,7 @@ WAVEFORMS = {'sine': sin,
 
 
 class ToneGenerator(BaseDecoder):
-    def __init__(self, waveform: str, duration: int, frequency: int):
+    def __init__(self, waveform: str, duration: float, frequency: int):
         self.func = lambda frame: WAVEFORMS[waveform](frame/self.frequency,
                                                       frequency)
         self.duration = duration
@@ -55,7 +55,7 @@ class ToneGenerator(BaseDecoder):
         return 'Float32'
 
     @BaseDecoder.length.getter
-    def length(self) -> int: return self.duration
+    def length(self) -> int: return int(self.duration * self.frequency)
 
     def seek(self, pos: int) -> bool: return False
 
@@ -75,7 +75,7 @@ class TypePrinter(Action):
         parser.exit()
 
 
-def play(device: str, waveform: str, duration: int, frequency: int) -> None:
+def play(device: str, waveform: str, duration: float, frequency: int) -> None:
     with Device(device) as dev, Context(dev):
         dec = ToneGenerator(waveform, duration, frequency)
         with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play() as src:
@@ -86,10 +86,12 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--types', nargs=0, action=TypePrinter,
                         help='print available waveform types in this example')
-    parser.add_argument('-w', '--waveform', default='SINE', nargs=1,
+    parser.add_argument('-w', '--waveform', default='sine', nargs=1,
                         help='waveform to be generated')
     parser.add_argument('-d', '--device', default='', help='device name')
-    parser.add_argument('-l', '--duration', default=30, type=int,
+    parser.add_argument('-l', '--duration', default=5.0, type=float,
                         help='duration, in second')
+    parser.add_argument('-f', '--frequency', default=44100, type=int,
+                        help='frequency for the wave')
     args = parser.parse_args()
-    play(args.device, args.waveform, args.duration)
+    play(args.device, args.waveform, args.duration, args.frequency)
