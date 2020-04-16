@@ -19,7 +19,7 @@
 
 from argparse import ArgumentParser
 
-from palace import device_names, Device
+from palace import device_names, Device, Context
 
 
 parser = ArgumentParser()
@@ -37,6 +37,19 @@ with args.device:
 
     print(f'\nInfo of device {args.device.name!r}:')
     print('ALC version: {}.{}'.format(*args.device.alc_version))
+
+    # TODO: AL info
+    with Device() as dev, Context(dev) as ctx:
+        print()
+        print('Available resamplers:')
+        default_idx = ctx.default_resampler_index
+        default_resampler = ctx.available_resamplers[default_idx]
+        for resampler in ctx.available_resamplers:
+            if resampler == default_resampler:
+                resampler += ' (default)'
+            print(resampler)
+        print()
+
     efx = args.device.efx_version
     if efx == (0, 0):
         print('EFX not supported!')
