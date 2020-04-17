@@ -18,7 +18,6 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
-from typing import Iterable
 
 from palace import device_names, Device, Context
 
