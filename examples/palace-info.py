@@ -38,14 +38,11 @@ with args.device:
     print(f'\nInfo of device {args.device.name!r}:')
     print('ALC version: {}.{}'.format(*args.device.alc_version))
 
-    # TODO: AL info
     with Context(args.device) as ctx:
-        print('\nAvailable resamplers:')
         default_idx = ctx.default_resampler_index
         resamplers = ctx.available_resamplers
         resamplers[default_idx] += ' (default)'
-        print(*resamplers, sep='\n')
-        print()
+        print('\nAvailable resamplers:', *resamplers, sep='\n  ')
 
     efx = args.device.efx_version
     if efx == (0, 0):
