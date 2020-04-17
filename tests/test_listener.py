@@ -1,4 +1,4 @@
-# Source pytest module
+# Listener pytest module
 # Copyright (C) 2020  Ngô Xuân Minh
 #
 # This file is part of palace.
@@ -18,7 +18,6 @@
 
 """This pytest module tries to test the correctness of the class Listener."""
 
-from palace import Listener
 from pytest import raises
 
 from math import inf
@@ -26,47 +25,47 @@ from math import inf
 
 def test_gain(context):
     """Test write property gain."""
-    Listener(context).gain = 5/7
-    Listener(context).gain = 7/5
-    Listener(context).gain = 0
-    Listener(context).gain = inf
-    with raises(ValueError): Listener(context).gain = -1
+    context.listener.gain = 5/7
+    context.listener.gain = 7/5
+    context.listener.gain = 0
+    context.listener.gain = inf
+    with raises(ValueError): context.listener.gain = -1
 
 
 def test_position(context):
     """Test write property position."""
-    Listener(context).position = (1, 0, 1)
-    Listener(context).position = (1, 0, -1)
-    Listener(context).position = (1, -1, 0)
-    Listener(context).position = (1, 1, 0)
-    Listener(context).position = (0, 0, 0)
-    Listener(context).position = (1, 1, 1)
+    context.listener.position = 1, 0, 1
+    context.listener.position = 1, 0, -1
+    context.listener.position = 1, -1, 0
+    context.listener.position = 1, 1, 0
+    context.listener.position = 0, 0, 0
+    context.listener.position = 1, 1, 1
 
 
 def test_velocity(context):
     """Test write property velocity."""
-    Listener(context).velocity = (420, 0, 69)
-    Listener(context).velocity = (69, 0, -420)
-    Listener(context).velocity = (0, 420, -69)
-    Listener(context).velocity = (0, 0, 42)
-    Listener(context).velocity = (0, 0, 0)
-    Listener(context).velocity = (420, 69, 420)
+    context.listener.velocity = 420, 0, 69
+    context.listener.velocity = 69, 0, -420
+    context.listener.velocity = 0, 420, -69
+    context.listener.velocity = 0, 0, 42
+    context.listener.velocity = 0, 0, 0
+    context.listener.velocity = 420, 69, 420
 
 
 def test_orientaion(context):
     """Test write property orientation."""
-    Listener(context).orientation = [(420, 0, 69), (0, 42, 0)]
-    Listener(context).orientation = [(69, 0, -420), (0, -69, 420)]
-    Listener(context).orientation = [(0, 420, -69), (420, -69, 69)]
-    Listener(context).orientation = [(0, 0, 42), (-420, -420, 0)]
-    Listener(context).orientation = [(0, 0, 0), (-420, -69, -69)]
-    Listener(context).orientation = [(420, 69, 420), (69, -420, 0)]
+    context.listener.orientation = (420, 0, 69), (0, 42, 0)
+    context.listener.orientation = (69, 0, -420), (0, -69, 420)
+    context.listener.orientation = (0, 420, -69), (420, -69, 69)
+    context.listener.orientation = (0, 0, 42), (-420, -420, 0)
+    context.listener.orientation = (0, 0, 0), (-420, -69, -69)
+    context.listener.orientation = (420, 69, 420), (69, -420, 0)
 
 
 def test_meters_per_unit(context):
     """Test write property meter_per_unit."""
-    Listener(context).gain = 4/9
-    Listener(context).gain = 9/4
-    Listener(context).gain = 0
-    Listener(context).gain = inf
-    with raises(ValueError): Listener(context).gain = -1
+    context.listener.meters_per_unit = 4/9
+    context.listener.meters_per_unit = 9/4
+    with raises(ValueError): context.listener.meters_per_unit = 0
+    context.listener.meters_per_unit = inf
+    with raises(ValueError): context.listener.meters_per_unit = -1
