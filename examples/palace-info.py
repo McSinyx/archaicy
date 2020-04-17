@@ -23,14 +23,6 @@ from typing import Iterable
 from palace import device_names, Device, Context
 
 
-def get_resamplers(context: Context) -> Iterable[str]:
-    """Get the list of resamplers with the default one marked."""
-    default_idx = ctx.default_resampler_index
-    resamplers = ctx.available_resamplers
-    resamplers[default_idx] += ' (default)'
-    return resamplers
-
-
 parser = ArgumentParser()
 parser.add_argument('device', type=Device, default='', nargs='?',
                     help='name of device to give extra info')
@@ -50,7 +42,9 @@ with args.device:
     # TODO: AL info
     with Context(args.device) as ctx:
         print('\nAvailable resamplers:')
-        resamplers = get_resamplers(ctx)
+        default_idx = ctx.default_resampler_index
+        resamplers = ctx.available_resamplers
+        resamplers[default_idx] += ' (default)'
         print(*resamplers, sep='\n')
         print()
 
