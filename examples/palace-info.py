@@ -49,8 +49,7 @@ with args.device:
 
     # TODO: AL info
     with Context(args.device) as ctx:
-        print()
-        print('Available resamplers:')
+        print('\nAvailable resamplers:')
         resamplers = get_resamplers(ctx)
         print(*resamplers, sep='\n')
         print()
