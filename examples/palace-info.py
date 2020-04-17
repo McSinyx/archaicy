@@ -18,8 +18,17 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
+from typing import Iterable
 
 from palace import device_names, Device, Context
+
+
+def get_resamplers(context: Context) -> Iterable[str]:
+    """Get the list of resamplers with the default one marked."""
+    default_idx = ctx.default_resampler_index
+    resamplers = ctx.available_resamplers
+    resamplers[default_idx] += ' (default)'
+    return resamplers
 
 
 parser = ArgumentParser()
@@ -39,15 +48,11 @@ with args.device:
     print('ALC version: {}.{}'.format(*args.device.alc_version))
 
     # TODO: AL info
-    with Device() as dev, Context(dev) as ctx:
+    with Context(args.device) as ctx:
         print()
         print('Available resamplers:')
-        default_idx = ctx.default_resampler_index
-        default_resampler = ctx.available_resamplers[default_idx]
-        for resampler in ctx.available_resamplers:
-            if resampler == default_resampler:
-                resampler += ' (default)'
-            print(resampler)
+        resamplers = get_resamplers(ctx)
+        print(*resamplers, sep='\n')
         print()
 
     efx = args.device.efx_version
