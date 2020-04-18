@@ -42,7 +42,7 @@ with args.device:
         default_idx = ctx.default_resampler_index
         resamplers = ctx.available_resamplers
         resamplers[default_idx] += ' (default)'
-        print('\nAvailable resamplers:', *resamplers, sep='\n  ')
+        print('Available resamplers:', *resamplers, sep='\n  ')
 
     efx = args.device.efx_version
     if efx == (0, 0):
