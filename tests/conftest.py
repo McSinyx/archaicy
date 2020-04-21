@@ -1,4 +1,4 @@
-# Source pytest module
+# Audio source pytest module
 # Copyright (C) 2020  Ngô Ngọc Đức Huy
 #
 # This file is part of palace.
