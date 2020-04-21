@@ -20,70 +20,72 @@ from os.path import abspath, dirname, join
 from subprocess import run
 from sys import executable
 
-EVENT = join(abspath(dirname(__file__)),'palace-event.py')
-HRTF = join(abspath(dirname(__file__)),'palace-hrtf.py')
-INFO = join(abspath(dirname(__file__)),'palace-info.py')
-LATENCY = join(abspath(dirname(__file__)),'palace-latency.py')
-REVERB = join(abspath(dirname(__file__)),'palace-reverb.py')
-STDEC = join(abspath(dirname(__file__)),'palace-stdec.py')
-TONEGEN = join(abspath(dirname(__file__)),'palace-tonegen.py')
+EVENT = join(abspath(dirname(__file__)), 'palace-event.py')
+HRTF = join(abspath(dirname(__file__)), 'palace-hrtf.py')
+INFO = join(abspath(dirname(__file__)), 'palace-info.py')
+LATENCY = join(abspath(dirname(__file__)), 'palace-latency.py')
+REVERB = join(abspath(dirname(__file__)), 'palace-reverb.py')
+STDEC = join(abspath(dirname(__file__)), 'palace-stdec.py')
+TONEGEN = join(abspath(dirname(__file__)), 'palace-tonegen.py')
+WAV = abspath(join(dirname(__file__), '..', 'data',
+                   'Dying-Robot-SoundBible.com-1721415199.wav'))
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 
 
 def test_event():
     event = run([executable, EVENT, WAV], capture_output=True)  # noqa
-    assert 'Opened' in event.stdout
-    assert 'Playing' in event.stdout
+    assert b'Opened' in event.stdout
+    assert b'Playing' in event.stdout
 
 
 def test_hrtf():
     hrtf = run([executable, HRTF, WAV], capture_output=True)  # noqa
-    assert 'Opened' in hrtf.stdout
-    assert 'Playing' in hrtf.stdout
+    assert b'Opened' in hrtf.stdout
+    assert b'Playing' in hrtf.stdout
 
 
 def test_info():
     info = run([executable, INFO], capture_output=True)
-    assert 'Available basic devices' in info.stdout
-    assert 'Available devices' in info.stdout
-    assert 'Available capture devices' in info.stdout
-    assert 'Info of device' in info.stdout
-    assert 'ALC version' in info.stdout
-    assert 'Available resamplers' in info.stdout
-    assert 'EFX version' in info.stdout
-    assert 'Max auxiliary sends' in info.stdout
-    assert 'with the first being default' in info.stdout
+    assert b'Available basic devices' in info.stdout
+    assert b'Available devices' in info.stdout
+    assert b'Available capture devices' in info.stdout
+    assert b'Info of device' in info.stdout
+    assert b'ALC version' in info.stdout
+    assert b'Available resamplers' in info.stdout
+    assert b'EFX version' in info.stdout
+    assert b'Max auxiliary sends' in info.stdout
+    assert b'with the first being default' in info.stdout
 
 
 def test_latency():
     latency = run([executable, LATENCY, WAV], capture_output=True)  # noqa
-    assert 'Opened' in latency.stdout
-    assert 'Playing' in latency.stdout
-    assert 'Offset' in latency.stdout
+    assert b'Opened' in latency.stdout
+    assert b'Playing' in latency.stdout
+    assert b'Offset' in latency.stdout
 
 
 def test_reverb():
     reverbs = run([executable, REVERB, '-p'], capture_output=True)
-    assert 'Available reverb preset names:' in reverbs.stdout
+    assert b'Available reverb preset names:' in reverbs.stdout
     fxs = reverbs.stdout.split('\n')[1:]
     for fx in fxs:
         reverb = run([executable, REVERB, '-r', fx, WAV], capture_output=True)  # noqa
-        assert 'Opened' in reverb.stdout
-        assert 'Playing' in reverb.stdout
-        assert fx in reverb.stdout
+        assert b'Opened' in reverb.stdout
+        assert b'Playing' in reverb.stdout
+        assert fx.encode() in reverb.stdout
 
 
 def test_stdec():
     stdec = run([executable, STDEC, WAV], capture_output=True)  # noqa
-    assert 'Opened' in stdec.stdout
-    assert 'Playing' in stdec.stdout
+    assert b'Opened' in stdec.stdout
+    assert b'Playing' in stdec.stdout
 
 
 @pytest.mark.parametrize('waveform', WAVEFORMS)
 def test_tonegen(waveform):
     tonegen = run([executable, TONEGEN, '-w', waveform],
                   capture_output=True)
-    assert 'Opened' in tonegen.stdout
-    assert 'Playing' in tonegen.stdout
-    assert waveform in tonegen.stdout
+    assert b'Opened' in tonegen.stdout
+    assert b'Playing' in tonegen.stdout
+    assert waveform.encode() in tonegen.stdout
