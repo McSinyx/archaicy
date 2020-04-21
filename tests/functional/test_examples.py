@@ -68,7 +68,7 @@ def test_latency():
 def test_reverb():
     reverbs = run([executable, REVERB, '-p'], capture_output=True)
     assert b'Available reverb preset names:' in reverbs.stdout
-    fxs = reverbs.stdout.split('\n')[1:]
+    fxs = reverbs.stdout.split(b'\n')[1:]
     for fx in fxs:
         reverb = run([executable, REVERB, '-r', fx, WAV], capture_output=True)  # noqa
         assert b'Opened' in reverb.stdout
