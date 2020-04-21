@@ -73,7 +73,7 @@ def test_reverb():
         reverb = run([executable, REVERB, '-r', fx, WAV], capture_output=True)  # noqa
         assert b'Opened' in reverb.stdout
         assert b'Playing' in reverb.stdout
-        assert fx.encode() in reverb.stdout
+        assert fx in reverb.stdout
 
 
 def test_stdec():
