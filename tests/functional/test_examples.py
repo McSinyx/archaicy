@@ -26,7 +26,8 @@ LATENCY = './palace-latency.py'
 REVERB = '/palace-reverb.py'
 STDEC = './palace-stdec.py'
 TONEGEN = '/palace-tonegen.py'
-WAVEFORMS = ['sine', 'square', 'sawtooth', 'triangle', 'impulse', 'white-noise']
+WAVEFORMS = ['sine', 'square', 'sawtooth',
+             'triangle', 'impulse', 'white-noise']
 
 
 def test_event():
@@ -80,8 +81,8 @@ def test_stdec():
 
 def test_tonegen():
     for waveform in WAVEFORMS:
-        tonegen = run([executable, TONEGEN, '-w', waveform], capture_output=True)
+        tonegen = run([executable, TONEGEN, '-w', waveform],
+                      capture_output=True)
         assert 'Opened' in tonegen.stdout
         assert 'Playing' in tonegen.stdout
         assert waveform in tonegen.stdout
-        
