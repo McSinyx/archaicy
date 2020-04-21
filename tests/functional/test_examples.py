@@ -33,7 +33,7 @@ def test_hrtf():
 
 
 def test_info():
-    info = run([executable, './palace-hrtf.py'], capture_output=True)
+    info = run([executable, './palace-info.py'], capture_output=True)
     assert 'Available basic devices' in info.stdout
     assert 'Available devices' in info.stdout
     assert 'Available capture devices' in info.stdout
@@ -46,7 +46,7 @@ def test_info():
 
 
 def test_latency():
-    latency = run([executable, './palace-event.py', WAV], capture_output=True)
+    latency = run([executable, './palace-latency.py', WAV], capture_output=True)
     assert 'Opened' in latency.stdout
     assert 'Playing' in latency.stdout
     assert 'Offset' in latency.stdout
@@ -64,10 +64,16 @@ def test_reverb():
 
 
 def test_stdec():
-    event = run([executable, './palace-hrtf.py', WAV], capture_output=True)
-    assert 'Opened' in event.stdout
-    assert 'Playing' in event.stdout
+    stdec = run([executable, './palace-stdec.py', WAV], capture_output=True)
+    assert 'Opened' in stdec.stdout
+    assert 'Playing' in stdec.stdout
 
 
 def test_tonegen():
-    pass
+    waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'impulse', 'white-noise']
+    for waveform in waveforms:
+        tonegen = run([executable, '/palace-tonegen.py', '-w', waveform], capture_output=True)
+        assert 'Opened' in tonegen.stdout
+        assert 'Playing' in tonegen.stdout
+        assert waveform in tonegen.stdout
+        
