@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
-
+import pytest
 from os.path import abspath, basename, join
 from subprocess import run
 from sys import executable
@@ -80,10 +80,10 @@ def test_stdec():
     assert 'Playing' in stdec.stdout
 
 
-def test_tonegen():
-    for waveform in WAVEFORMS:
-        tonegen = run([executable, TONEGEN, '-w', waveform],
-                      capture_output=True)
-        assert 'Opened' in tonegen.stdout
-        assert 'Playing' in tonegen.stdout
-        assert waveform in tonegen.stdout
+@pytest.mark.parametrize('waveform', WAVEFORMS)
+def test_tonegen(waveform):
+    tonegen = run([executable, TONEGEN, '-w', waveform],
+                  capture_output=True)
+    assert 'Opened' in tonegen.stdout
+    assert 'Playing' in tonegen.stdout
+    assert waveform in tonegen.stdout
