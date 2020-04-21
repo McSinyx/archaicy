@@ -33,7 +33,7 @@ def test_hrtf():
 
 
 def test_info():
-    info = run([executable, './palace-hrtf.py', WAV], capture_output=True)
+    info = run([executable, './palace-hrtf.py'], capture_output=True)
     assert 'Available basic devices' in info.stdout
     assert 'Available devices' in info.stdout
     assert 'Available capture devices' in info.stdout
@@ -53,7 +53,14 @@ def test_latency():
 
 
 def test_reverb():
-    pass
+    reverbs = run([executable, '/palace-reverb.py', '-p'], capture_output=True)
+    assert 'Available reverb preset names:' in reverbs.stdout
+    fxs = reverbs.stdout.split('\n')[1:]
+    for fx in fxs:
+        reverb = run([executable, '/palace-reverb.py', '-r', fx], capture_output=True)
+        assert 'Opened' in reverb.stdout
+        assert 'Playing' in reverb.stdout
+        assert fx in reverb.stdout
 
 
 def test_stdec():
