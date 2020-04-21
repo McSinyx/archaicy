@@ -17,7 +17,7 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from subprocess import run
-from sys import excecutable
+from sys import executable
 
 EVENT = './palace-event.py'
 HRTF = './palace-hrtf.py'
