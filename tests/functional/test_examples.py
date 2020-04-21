@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 import pytest
+import subprocess
 from os.path import abspath, dirname, join
 from random import choices
 from subprocess import run
@@ -35,19 +36,19 @@ WAVEFORMS = ['sine', 'square', 'sawtooth',
 
 
 def test_event():
-    event = run([executable, EVENT, WAV], capture_output=True)  # noqa
+    event = run([executable, EVENT, WAV], stdout=subprocess.PIPE)
     assert b'Opened' in event.stdout
     assert b'Playing' in event.stdout
 
 
 def test_hrtf():
-    hrtf = run([executable, HRTF, WAV], capture_output=True)  # noqa
+    hrtf = run([executable, HRTF, WAV], stdout=subprocess.PIPE)
     assert b'Opened' in hrtf.stdout
     assert b'Playing' in hrtf.stdout
 
 
 def test_info():
-    info = run([executable, INFO], capture_output=True)
+    info = run([executable, INFO], stdout=subprocess.PIPE)
     assert b'Available basic devices' in info.stdout
     assert b'Available devices' in info.stdout
     assert b'Available capture devices' in info.stdout
@@ -60,26 +61,26 @@ def test_info():
 
 
 def test_latency():
-    latency = run([executable, LATENCY, WAV], capture_output=True)  # noqa
+    latency = run([executable, LATENCY, WAV], stdout=subprocess.PIPE)
     assert b'Opened' in latency.stdout
     assert b'Playing' in latency.stdout
     assert b'Offset' in latency.stdout
 
 
 def test_reverb():
-    reverbs = run([executable, REVERB, '-p'], capture_output=True)
+    reverbs = run([executable, REVERB, '-p'], stdout=subprocess.PIPE)
     assert b'Available reverb preset names:' in reverbs.stdout
     fxs = reverbs.stdout.split(b'\n')[1:-1]
     fxs = choices(fxs, k=5)
     for fx in fxs:
-        reverb = run([executable, REVERB, '-r', fx, WAV], capture_output=True)  # noqa
-        assert b'Opened' in reverb.stdout
-        assert b'Playing' in reverb.stdout
-        assert fx in reverb.stdout
+        rv = run([executable, REVERB, '-r', fx, WAV], stdout=subprocess.PIPE)
+        assert b'Opened' in rv.stdout
+        assert b'Playing' in rv.stdout
+        assert fx in rv.stdout
 
 
 def test_stdec():
-    stdec = run([executable, STDEC, WAV], capture_output=True)  # noqa
+    stdec = run([executable, STDEC, WAV], stdout=subprocess.PIPE)
     assert b'Opened' in stdec.stdout
     assert b'Playing' in stdec.stdout
 
@@ -87,7 +88,7 @@ def test_stdec():
 @pytest.mark.parametrize('waveform', WAVEFORMS)
 def test_tonegen(waveform):
     tonegen = run([executable, TONEGEN, '-w', waveform],
-                  capture_output=True)
+                  stdout=subprocess.PIPE)
     assert b'Opened' in tonegen.stdout
     assert b'Playing' in tonegen.stdout
     assert waveform.encode() in tonegen.stdout
