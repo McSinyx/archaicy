@@ -21,8 +21,46 @@ from sys import excecutable
 
 
 def test_event():
-    pass
+    event = run([executable, './palace-event.py', WAV], capture_output=True)
+    assert 'Opened' in event.stdout
+    assert 'Playing' in event.stdout
 
 
 def test_hrtf():
+    hrtf = run([executable, './palace-hrtf.py', WAV], capture_output=True)
+    assert 'Opened' in hrtf.stdout
+    assert 'Playing' in hrtf.stdout
+
+
+def test_info():
+    info = run([executable, './palace-hrtf.py', WAV], capture_output=True)
+    assert 'Available basic devices' in info.stdout
+    assert 'Available devices' in info.stdout
+    assert 'Available capture devices' in info.stdout
+    assert 'Info of device' in info.stdout
+    assert 'ALC version' in info.stdout
+    assert 'Available resamplers' in info.stdout
+    assert 'EFX version' in info.stdout
+    assert 'Max auxiliary sends' in info.stdout
+    assert 'with the first being default' in info.stdout
+
+
+def test_latency():
+    latency = run([executable, './palace-event.py', WAV], capture_output=True)
+    assert 'Opened' in latency.stdout
+    assert 'Playing' in latency.stdout
+    assert 'Offset' in latency.stdout
+
+
+def test_reverb():
+    pass
+
+
+def test_stdec():
+    event = run([executable, './palace-hrtf.py', WAV], capture_output=True)
+    assert 'Opened' in event.stdout
+    assert 'Playing' in event.stdout
+
+
+def test_tonegen():
     pass
