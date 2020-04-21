@@ -19,21 +19,30 @@
 from subprocess import run
 from sys import excecutable
 
+EVENT = './palace-event.py'
+HRTF = './palace-hrtf.py'
+INFO = './palace-info.py'
+LATENCY = './palace-latency.py'
+REVERB = '/palace-reverb.py'
+STDEC = './palace-stdec.py'
+TONEGEN = '/palace-tonegen.py'
+WAVEFORMS = ['sine', 'square', 'sawtooth', 'triangle', 'impulse', 'white-noise']
+
 
 def test_event():
-    event = run([executable, './palace-event.py', WAV], capture_output=True)
+    event = run([executable, EVENT, WAV], capture_output=True)
     assert 'Opened' in event.stdout
     assert 'Playing' in event.stdout
 
 
 def test_hrtf():
-    hrtf = run([executable, './palace-hrtf.py', WAV], capture_output=True)
+    hrtf = run([executable, HRTF, WAV], capture_output=True)
     assert 'Opened' in hrtf.stdout
     assert 'Playing' in hrtf.stdout
 
 
 def test_info():
-    info = run([executable, './palace-info.py'], capture_output=True)
+    info = run([executable, INFO], capture_output=True)
     assert 'Available basic devices' in info.stdout
     assert 'Available devices' in info.stdout
     assert 'Available capture devices' in info.stdout
@@ -46,33 +55,32 @@ def test_info():
 
 
 def test_latency():
-    latency = run([executable, './palace-latency.py', WAV], capture_output=True)
+    latency = run([executable, LATENCY, WAV], capture_output=True)
     assert 'Opened' in latency.stdout
     assert 'Playing' in latency.stdout
     assert 'Offset' in latency.stdout
 
 
 def test_reverb():
-    reverbs = run([executable, '/palace-reverb.py', '-p'], capture_output=True)
+    reverbs = run([executable, REVERB, '-p'], capture_output=True)
     assert 'Available reverb preset names:' in reverbs.stdout
     fxs = reverbs.stdout.split('\n')[1:]
     for fx in fxs:
-        reverb = run([executable, '/palace-reverb.py', '-r', fx], capture_output=True)
+        reverb = run([executable, REVERB, '-r', fx], capture_output=True)
         assert 'Opened' in reverb.stdout
         assert 'Playing' in reverb.stdout
         assert fx in reverb.stdout
 
 
 def test_stdec():
-    stdec = run([executable, './palace-stdec.py', WAV], capture_output=True)
+    stdec = run([executable, STDEC, WAV], capture_output=True)
     assert 'Opened' in stdec.stdout
     assert 'Playing' in stdec.stdout
 
 
 def test_tonegen():
-    waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'impulse', 'white-noise']
-    for waveform in waveforms:
-        tonegen = run([executable, '/palace-tonegen.py', '-w', waveform], capture_output=True)
+    for waveform in WAVEFORMS:
+        tonegen = run([executable, TONEGEN, '-w', waveform], capture_output=True)
         assert 'Opened' in tonegen.stdout
         assert 'Playing' in tonegen.stdout
         assert waveform in tonegen.stdout
