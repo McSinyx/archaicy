@@ -16,17 +16,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 import pytest
-from os.path import abspath, basename, join
+from os.path import abspath, dirname, join
 from subprocess import run
 from sys import executable
 
-EVENT = join(abspath(basename('./palace-event.py')))
-HRTF = join(abspath(basename('./palace-hrtf.py')))
-INFO = join(abspath(basename('./palace-info.py')))
-LATENCY = join(abspath(basename('./palace-latency.py')))
-REVERB = join(abspath(basename('./palace-reverb.py')))
-STDEC = join(abspath(basename('./palace-stdec.py')))
-TONEGEN = join(abspath(basename('./palace-tonegen.py')))
+EVENT = join(abspath(dirname(__file__)),'palace-event.py')
+HRTF = join(abspath(dirname(__file__)),'palace-hrtf.py')
+INFO = join(abspath(dirname(__file__)),'palace-info.py')
+LATENCY = join(abspath(dirname(__file__)),'palace-latency.py')
+REVERB = join(abspath(dirname(__file__)),'palace-reverb.py')
+STDEC = join(abspath(dirname(__file__)),'palace-stdec.py')
+TONEGEN = join(abspath(dirname(__file__)),'palace-tonegen.py')
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 

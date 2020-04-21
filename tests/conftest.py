@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
-from os.path import basename, join
+from os.path import abspath, dirname, join
 
 
-WAV = join(basename(__file__), 'data',
+WAV = join(abspath(dirname(__file__)), 'data',
            'Dying-Robot-SoundBible.com-1721415199.wav')
