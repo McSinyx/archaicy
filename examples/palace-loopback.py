@@ -18,13 +18,10 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
-from functools import partial
-from operator import not_
-from random import random
 from time import sleep
-from typing import Callable, Dict, Tuple
+from typing import Tuple
 
-from numpy import arange, float32, ndarray, pi, sin
+from numpy import arange, float32, pi, sin
 from palace import Buffer, Context, BaseDecoder, Device
 
 
@@ -62,25 +59,22 @@ class SineGenerator(BaseDecoder):
         return data.astype(float32).tobytes()
 
 
-def play(device: str, waveform: str,
-         duration: float, frequency: float) -> None:
+def play(device: str, duration: float, frequency: float) -> None:
     """Play waveform at the given frequency for given duration."""
     with Device(device) as dev, Context(dev):
         print('Opened', dev.name)
         dec = SineGenerator(duration, frequency)
-        print(f'Playing {waveform} signal at {frequency} Hz for {duration} s')
-        with Buffer.from_decoder(dec, 'tonegen') as buf, buf.play():
+        print(f'Loopback a sine signal at {frequency} Hz for {duration} s')
+        with Buffer.from_decoder(dec, 'loopback') as buf, buf.play():
             sleep(duration)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-d', '--device', default='', help='device name')
-    parser.add_argument('-w', '--waveform', default='sine', choices=WAVEFORMS,
-                        help='waveform to be generated, default to sine')
     parser.add_argument('-l', '--duration', default=1.0, type=float,
                         help='duration in second, default to 1.0')
     parser.add_argument('-f', '--frequency', default=440.0, type=float,
                         help='wave frequency in hertz, default to 440.0')
     args = parser.parse_args()
-    play(args.device, args.waveform, args.duration, args.frequency)
+    play(args.device, args.duration, args.frequency)
