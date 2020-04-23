@@ -41,7 +41,7 @@ REVERB_PRESETS = choices(reverb_preset_names, k=5)
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 
-timeout = mark.timeout(timeout=2, method='signal')
+timeout = mark.timeout(timeout=5, method='signal')
 osxfail = mark.xfail(system()=='Darwin', reason='Travis CI for macOS')
 
 
@@ -51,7 +51,7 @@ def capture(*argv):
 
 
 @osxfail
-@timeout(timeout=5)
+@timeout
 def test_event(aiff, flac, mp3, ogg, wav):
     """Test the event handling example."""
     event = capture(EVENT, aiff, flac, mp3, ogg, wav)
