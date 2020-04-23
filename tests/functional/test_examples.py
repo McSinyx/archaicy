@@ -46,6 +46,7 @@ def capture(*argv):
     return run([executable, *argv], stdout=PIPE).stdout.decode()
 
 
+@mark.timeout(timeout=5, method='signal')
 def test_event(aiff, flac, mp3, ogg, wav):
     """Test the event handling example."""
     event = capture(EVENT, aiff, flac, mp3, ogg, wav)
@@ -57,6 +58,7 @@ def test_event(aiff, flac, mp3, ogg, wav):
     assert f'Playing {wav}' in event
 
 
+@mark.timeout(timeout=1, method='signal')
 def test_hrtf(ogg):
     """Test the HRTF example."""
     hrtf = capture(HRTF, ogg)
@@ -64,6 +66,7 @@ def test_hrtf(ogg):
     assert f'Playing {ogg}' in hrtf
 
 
+@mark.timeout(timeout=1, method='signal')
 def test_info():
     """Test the information query example."""
     run([executable, INFO], check=True)
@@ -71,6 +74,7 @@ def test_info():
         run([executable, INFO, MADEUP_DEVICE], check=True)
 
 
+@mark.timeout(timeout=1, method='signal')
 def test_latency(mp3):
     """Test the latency example."""
     latency = capture(LATENCY, mp3)
@@ -79,6 +83,7 @@ def test_latency(mp3):
     assert 'Offset' in latency
 
 
+@mark.timeout(timeout=1, method='signal')
 @mark.parametrize('preset', REVERB_PRESETS)
 def test_reverb(preset, flac):
     """Test the reverb example."""
@@ -88,6 +93,7 @@ def test_reverb(preset, flac):
     assert f'Loading reverb preset {preset}' in reverb
 
 
+@mark.timeout(timeout=1, method='signal')
 def test_stdec(aiff):
     """Test the stdec example."""
     stdec = capture(STDEC, aiff)
@@ -95,6 +101,7 @@ def test_stdec(aiff):
     assert f'Playing {aiff}' in stdec
 
 
+@mark.timeout(timeout=1, method='signal')
 @mark.parametrize('waveform', WAVEFORMS)
 def test_tonegen(waveform):
     """Test the tonegen example."""
