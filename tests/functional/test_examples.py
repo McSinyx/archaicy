@@ -41,7 +41,7 @@ REVERB_PRESETS = choices(reverb_preset_names, k=5)
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 
-timeout = mark.timeout(timeout=1, method='signal')
+timeout = mark.timeout(timeout=2, method='signal')
 osxfail = mark.xfail(system()=='Darwin', reason='Travis CI for macOS')
 
 
