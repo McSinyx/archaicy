@@ -18,15 +18,13 @@
 
 """This pytest module tries to test the correctness of the class Effect."""
 
-from palace import Context, Effect
+from palace import Effect
 from pytest import raises
 
-from math import inf
 
-
-def test_gain(device):
+def test_gain(context):
     """Test write-only property `gain`."""
-    with Context(device), Effect() as fx:
+    with Effect() as fx:
         fx.gain = 0
         fx.gain = 1
         fx.gain = 7/5
@@ -34,21 +32,21 @@ def test_gain(device):
         with raises(ValueError): fx.gain = -1
 
 
-def test_send_auto():
+def test_send_auto(context):
     """Test write-only property `send_auto`."""
-    with Context(device), Effect() as fx:
+    with Effect() as fx:
         fx.send_auto = False
         fx.send_auto = True
         with raises(ValueError): fx.gain = None
 
 
-def test_use_count():
+def test_use_count(context):
     """Test read-only property `use_count`."""
-    with Context(device), Effect() as fx:
+    with Effect() as fx:
         assert fx.use_count == len(fx.source_sends)
 
 
-def test_reverb_preset():
+def test_reverb_preset(context):
     """Test write-only property `reverb_preset`."""
-    with Context(device), Effect() as fx:
+    with Effect() as fx:
         fx.reverb_preset = 'GENERIC'
