@@ -27,8 +27,8 @@ def test_gain(context):
     with Effect() as fx:
         fx.gain = 0
         fx.gain = 1
-        fx.gain = 7/5
         fx.gain = 5/7
+        with raises(ValueError): fx.gain = 7/5
         with raises(ValueError): fx.gain = -1
 
 
@@ -37,7 +37,7 @@ def test_send_auto(context):
     with Effect() as fx:
         fx.send_auto = False
         fx.send_auto = True
-        with raises(ValueError): fx.gain = None
+        with raises(TypeError): fx.gain = None
 
 
 def test_source_sends(context):
