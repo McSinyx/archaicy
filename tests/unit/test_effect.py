@@ -18,7 +18,7 @@
 
 """This pytest module tries to test the correctness of the class Effect."""
 
-from palace import Effect
+from palace import Effect, Source
 from pytest import raises
 
 
@@ -39,6 +39,12 @@ def test_send_auto(context):
         fx.send_auto = True
         with raises(ValueError): fx.gain = None
 
+
+def test_source_sends(context):
+    """Test property `source_sends` by assigning it to a source."""
+    with Source() as src, Effect() as fx:
+        source.sends[0].effect = fx
+        
 
 def test_use_count(context):
     """Test read-only property `use_count`."""
