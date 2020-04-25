@@ -43,8 +43,8 @@ def test_send_auto(context):
 def test_source_sends(context):
     """Test property `source_sends` by assigning it to a source."""
     with Source() as src, Effect() as fx:
-        source.sends[0].effect = fx
-        
+        src.sends[0].effect = fx
+
 
 def test_use_count(context):
     """Test read-only property `use_count`."""
@@ -56,3 +56,4 @@ def test_reverb_preset(context):
     """Test write-only property `reverb_preset`."""
     with Effect() as fx:
         fx.reverb_preset = 'GENERIC'
+        with raises(ValueError): fx.reverb_preset = 'NOT_AN_EFFECT'
