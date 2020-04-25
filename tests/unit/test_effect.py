@@ -44,8 +44,7 @@ def test_source_sends(context):
     """Test property `source_sends` by assigning it to a source."""
     with Source() as src, Effect() as fx:
         src.sends[0].effect = fx
-        assert fx.source_sends[-1][0] == src
-        assert fx.source_sends[-1][1] == 0
+        assert fx.source_sends[-1] == (src, 0)
 
 
 def test_use_count(context):
