@@ -76,7 +76,7 @@ __all__ = [
     'thread_local', 'current_context', 'use_context',
     'cache', 'free', 'decode', 'sample_size', 'sample_length',
     'Device', 'Context', 'Listener', 'Buffer', 'Source', 'SourceGroup',
-    'Effect', 'ReverbEffect', 'ChorusEffect',
+    'BaseEffect', 'ReverbEffect', 'ChorusEffect',
     'Decoder', 'BaseDecoder', 'FileIO', 'MessageHandler']
 
 from abc import abstractmethod, ABCMeta
