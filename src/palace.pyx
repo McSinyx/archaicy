@@ -2010,7 +2010,7 @@ cdef class BaseEffect:
         return <boolean> self.slot and <boolean> self.impl
 
     @setter
-    def gain(self, value: float) -> None:
+    def slot_gain(self, value: float) -> None:
         """Gain of the effect slot."""
         self.slot.set_gain(value)
 
