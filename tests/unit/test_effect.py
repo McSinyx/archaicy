@@ -392,7 +392,6 @@ def test_reverb_room_rolloff_factor(context):
         with raises(ValueError): fx.room_rolloff_factor = -1
 
 
-@mark.xfail
 def test_reverb_decay_hf_limit(context):
     """Test ReverbEffect's property decay_hf_limit."""
     with ReverbEffect() as fx:
@@ -403,17 +402,14 @@ def test_reverb_decay_hf_limit(context):
         assert fx.decay_hf_limit
 
 
-@mark.xfail
 def test_chorus_waveform(context):
     """Test ChorusEffect's property waveform."""
     with ChorusEffect() as fx:
-        assert isclose(fx.waveform, 1)
-        fx.rate = 0
-        assert fx.rate == 0
-        fx.rate = 1
-        assert fx.rate == 1
-        with raises(ValueError): fx.rate = 2
-        with raises(ValueError): fx.rate = -1
+        assert fx.waveform == 'triangle'
+        fx.waveform = 'sin'
+        assert fx.waveform == 'sin'
+        fx.waveform = 'triangle'
+        assert fx.waveform == 'triangle'
 
 
 @mark.xfail

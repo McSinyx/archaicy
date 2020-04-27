@@ -2307,11 +2307,11 @@ cdef class ReverbEffect(BaseEffect):
         self.slot.apply_effect(self.impl)
 
     @property
-    def decay_hf_limit(self) -> int:
+    def decay_hf_limit(self) -> bool:
         return self.properties.decay_hf_limit
 
     @decay_hf_limit.setter
-    def decay_hf_limit(self, value: int) -> None:
+    def decay_hf_limit(self, value: bool) -> None:
         self.properties.decay_hf_limit = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
@@ -2322,7 +2322,7 @@ cdef class ChorusEffect(BaseEffect):
 
     Parameters
     ----------
-    waveform : int
+    waveform : str
     phase : int
     depth : float
     feedback : float
@@ -2338,8 +2338,9 @@ cdef class ChorusEffect(BaseEffect):
     """
     cdef alure.EFXCHORUSPROPERTIES properties
 
-    def __init__(self, waveform: int, phase: int,
-                 depth: float, feedback: float, delay: float,
+    def __init__(self, waveform: str = 'triangle',
+                 phase: int = 90, depth: float = 0.1,
+                 feedback: float = 0.25, delay: float,
                  context: Optional[Context] = None) -> None:
         super().__init__(context)
         self.properties.waveform = waveform
@@ -2351,11 +2352,11 @@ cdef class ChorusEffect(BaseEffect):
         self.slot.apply_effect(self.impl)
 
     @property
-    def waveform(self) -> int:
+    def waveform(self) -> str:
         return self.properties.waveform
 
     @waveform.setter
-    def waveform(self, value: int) -> None:
+    def waveform(self, value: str) -> None:
         self.properties.waveform = value
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
