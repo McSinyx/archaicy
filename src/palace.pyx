@@ -2341,7 +2341,7 @@ cdef class ChorusEffect(BaseEffect):
     def __init__(self, waveform: str = 'triangle',
                  phase: int = 90, depth: float = 0.1,
                  feedback: float = 0.25, delay: float,
-                 context: Optional[Context] = None) -> None:
+                 context: Optional[Context] = None) -> None:    
         super().__init__(context)
         self.properties.waveform = waveform
         self.properties.phase = phase
@@ -2353,11 +2353,17 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def waveform(self) -> str:
-        return self.properties.waveform
+        if self.properties.waveform == 1:
+            return 'triangle'
+        else:
+            return 'sin'
 
     @waveform.setter
     def waveform(self, value: str) -> None:
-        self.properties.waveform = value
+        if value == 'triangle':
+            self.properties.waveform = 1
+        else:
+            self.properties.waveform = 0;
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
