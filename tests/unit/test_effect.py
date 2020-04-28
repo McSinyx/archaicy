@@ -406,10 +406,11 @@ def test_chorus_waveform(context):
     """Test ChorusEffect's property waveform."""
     with ChorusEffect() as fx:
         assert fx.waveform == 'triangle'
-        fx.waveform = 'sin'
-        assert fx.waveform == 'sin'
+        fx.waveform = 'sine'
+        assert fx.waveform == 'sine'
         fx.waveform = 'triangle'
         assert fx.waveform == 'triangle'
+        with raises(ValueError): fx.waveform = 'ABC'
 
 
 @mark.xfail

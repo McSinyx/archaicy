@@ -2338,10 +2338,10 @@ cdef class ChorusEffect(BaseEffect):
     """
     cdef alure.EFXCHORUSPROPERTIES properties
 
-    def __init__(self, waveform: str = 'triangle',
+    def __init__(self, waveform: int = 1,
                  phase: int = 90, depth: float = 0.1,
-                 feedback: float = 0.25, delay: float,
-                 context: Optional[Context] = None) -> None:    
+                 feedback: float = 0.25, delay: float = 0.016,
+                 context: Optional[Context] = None) -> None:
         super().__init__(context)
         self.properties.waveform = waveform
         self.properties.phase = phase
@@ -2353,17 +2353,16 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def waveform(self) -> str:
-        if self.properties.waveform == 1:
-            return 'triangle'
-        else:
-            return 'sin'
+        return 'triangle' if self.properties.waveform else 'sine'
 
     @waveform.setter
     def waveform(self, value: str) -> None:
         if value == 'triangle':
             self.properties.waveform = 1
+        elif value == 'sine':
+            self.properties.waveform = 0
         else:
-            self.properties.waveform = 0;
+            raise ValueError(f'invalid waveform value')
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
