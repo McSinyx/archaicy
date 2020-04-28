@@ -2325,9 +2325,13 @@ cdef class ChorusEffect(BaseEffect):
     waveform : str
         Either 'sine' or 'triangle'.
     phase : int
+        From -180 to 180.
     depth : float
+        From 0.0 to 1.0.
     feedback : float
+        From -1.0 to 1.0.
     delay : float
+        From 0.0 to 0.016.
     context : Optional[Context], optional
         The context from which the effect is to be created.
         By default `current_context()` is used.
