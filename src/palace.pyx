@@ -2324,7 +2324,6 @@ cdef class ChorusEffect(BaseEffect):
     ----------
     waveform : str
         Either 'sine' or 'triangle'.
-        By default 'triangle' is used.
     phase : int
     depth : float
     feedback : float
@@ -2335,8 +2334,6 @@ cdef class ChorusEffect(BaseEffect):
 
     Raises
     ------
-    ValueError
-        If the waveform is neither set to 'sine' nor 'triangle'.
     RuntimeError
         If there is neither any context specified nor current.
     """
@@ -2373,6 +2370,7 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def phase(self) -> int:
+        """Phase, from -180 to 180."""
         return self.properties.phase
 
     @phase.setter
@@ -2383,6 +2381,7 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def depth(self) -> float:
+        """Depth, from 0.0 to 1.0."""
         return self.properties.depth
 
     @depth.setter
@@ -2393,6 +2392,7 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def feedback(self) -> float:
+        """Feedback, from -1.0 to 1.0."""
         return self.properties.feedback
 
     @feedback.setter
@@ -2403,6 +2403,7 @@ cdef class ChorusEffect(BaseEffect):
 
     @property
     def delay(self) -> float:
+        """Delay, from 0.0 to 0.016."""
         return self.properties.delay
 
     @delay.setter
