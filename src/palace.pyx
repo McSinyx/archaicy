@@ -2323,7 +2323,8 @@ cdef class ChorusEffect(BaseEffect):
     Parameters
     ----------
     waveform : str
-        
+        Either 'sine' or 'triangle'.
+        By default 'triangle' is used.
     phase : int
     depth : float
     feedback : float
@@ -2334,6 +2335,8 @@ cdef class ChorusEffect(BaseEffect):
 
     Raises
     ------
+    ValueError
+        If the waveform is neither set to 'sine' nor 'triangle'.
     RuntimeError
         If there is neither any context specified nor current.
     """
@@ -2345,15 +2348,16 @@ cdef class ChorusEffect(BaseEffect):
                  context: Optional[Context] = None) -> None:
         super().__init__(context)
         self.waveform = waveform
-        self.properties.phase = phase
-        self.properties.depth = depth
-        self.properties.feedback = feedback
-        self.properties.delay = delay
+        self.phase = phase
+        self.depth = depth
+        self.feedback = feedback
+        self.delay = delay
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
     @property
     def waveform(self) -> str:
+        """Waveform, either 'sine' or 'triangle'."""
         return 'triangle' if self.properties.waveform else 'sine'
 
     @waveform.setter
