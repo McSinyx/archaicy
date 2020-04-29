@@ -2383,7 +2383,10 @@ cdef class ChorusEffect(BaseEffect):
 
     @phase.setter
     def phase(self, value: int) -> None:
-        self.properties.phase = value
+        if value >= -180 and value <= 180:
+            self.properties.phase = value
+        else:
+            raise ValueError(f'invalid phase: {value}')
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
@@ -2394,7 +2397,10 @@ cdef class ChorusEffect(BaseEffect):
 
     @depth.setter
     def depth(self, value: float) -> None:
-        self.properties.depth = value
+        if value >= 0.0 and value <= 1.0:
+            self.properties.depth = value
+        else:
+            raise ValueError(f'invalid depth: {value}')
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
@@ -2405,7 +2411,10 @@ cdef class ChorusEffect(BaseEffect):
 
     @feedback.setter
     def feedback(self, value: float) -> None:
-        self.properties.feedback = value
+        if value >= -1.0 and value <= 1.0:
+            self.properties.feedback = value
+        else:
+            raise ValueError(f'invalid feedback: {value}')
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
@@ -2416,7 +2425,10 @@ cdef class ChorusEffect(BaseEffect):
 
     @delay.setter
     def delay(self, value: float) -> None:
-        self.properties.delay = value
+        if value >= 0.0 and value <= 0.016:
+            self.properties.delay = value
+        else:
+            raise ValueError(f'invalid delay: {value}')
         self.impl.set_chorus_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
