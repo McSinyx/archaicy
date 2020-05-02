@@ -2,6 +2,6 @@
 set -ex
 git clone --depth 1 https://github.com/kcat/alure /tmp/alure
 OPENALDIR=$(brew --prefix openal-soft) cmake -DCMAKE_FIND_FRAMEWORK=NEVER \
-  -S alure -B alure/build
-sudo cmake --build alure/build --parallel $(sysctl -n hw.ncpu) \
+  -S /tmp/alure -B /tmp/alure/build
+sudo cmake --build /tmp/alure/build --parallel $(sysctl -n hw.ncpu) \
   --config Release --target install
