@@ -14,7 +14,7 @@ env:
     - CIBW_BEFORE_BUILD_MACOS=.ci/before-build-macos
     - CIBW_REPAIR_WHEEL_COMMAND_MACOS=".ci/repair-whl-macos {wheel} {dest_dir}"
     - CIBW_TEST_REQUIRES=tox
-    - CIBW_TEST_COMMAND_MACOS="tox -c /Users/travis/build/McSinyx/palace"
+    # CIBW_TEST_COMMAND_MACOS="tox -c /Users/travis/build/McSinyx/palace"
     - CIBW_TEST_COMMAND_LINUX="tox -c /project"
 
 addons:
