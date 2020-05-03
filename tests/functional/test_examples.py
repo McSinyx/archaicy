@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
+from os import environ
 from os.path import abspath, dirname, join
 from platform import system
 from random import choices
@@ -41,8 +42,8 @@ REVERB_PRESETS = choices(reverb_preset_names, k=5)
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 
-timeout = mark.timeout(timeout=5, method='signal')
-osxfail = mark.xfail(system()=='Darwin', reason='Travis CI for macOS')
+skipif_travis_macos = mark.skipif(system()=='Darwin' and environ.get('TRAVIS'),
+                                  reason='Travis CI for macOS')
 
 
 def capture(*argv):
@@ -50,8 +51,7 @@ def capture(*argv):
     return run([executable, *argv], stdout=PIPE).stdout.decode()
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_event(aiff, flac, mp3, ogg, wav):
     """Test the event handling example."""
     event = capture(EVENT, aiff, flac, mp3, ogg, wav)
@@ -63,8 +63,7 @@ def test_event(aiff, flac, mp3, ogg, wav):
     assert f'Playing {wav}' in event
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_hrtf(ogg):
     """Test the HRTF example."""
     hrtf = capture(HRTF, ogg)
@@ -79,8 +78,7 @@ def test_info():
         run([executable, INFO, MADEUP_DEVICE], check=True)
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_latency(mp3):
     """Test the latency example."""
     latency = capture(LATENCY, mp3)
@@ -89,8 +87,7 @@ def test_latency(mp3):
     assert 'Offset' in latency
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 @mark.parametrize('preset', REVERB_PRESETS)
 def test_reverb(preset, flac):
     """Test the reverb example."""
@@ -100,8 +97,7 @@ def test_reverb(preset, flac):
     assert f'Loading reverb preset {preset}' in reverb
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_stdec(aiff):
     """Test the stdec example."""
     stdec = capture(STDEC, aiff)

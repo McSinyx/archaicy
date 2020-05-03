@@ -17,6 +17,7 @@
 # along with palace.  If not, see <https://www.gnu.org/licenses/>.
 
 import aifc
+from os import environ
 from platform import system
 from unittest.mock import Mock
 from uuid import uuid4
@@ -25,8 +26,8 @@ from palace import (channel_configs, sample_types, decode,
                     Device, Context, Buffer, SourceGroup, MessageHandler)
 from pytest import mark
 
-timeout = mark.timeout(timeout=5, method='signal')
-osxfail = mark.xfail(system()=='Darwin', reason='Travis CI for macOS')
+skipif_travis_macos = mark.skipif(system()=='Darwin' and environ.get('TRAVIS'),
+                                  reason='Travis CI for macOS')
 
 
 def mock(message):
@@ -40,8 +41,7 @@ def test_device_diconnected():
     """Test the handling of device disconnected message."""
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_source_stopped(wav):
     """Test the handling of source stopped message."""
     with Device() as device, Context(device) as context, Buffer(wav) as buffer:
@@ -52,8 +52,7 @@ def test_source_stopped(wav):
             context.message_handler.source_stopped.assert_called_with(source)
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_source_force_stopped(ogg):
     """Test the handling of source force stopped message."""
     with Device() as device, Context(device) as context:
@@ -69,8 +68,7 @@ def test_source_force_stopped(ogg):
         source.destroy()
 
 
-@osxfail
-@timeout
+@skipif_travis_macos
 def test_buffer_loading(aiff):
     """Test the handling of buffer loading message."""
     with Device() as device, Context(device) as context:
