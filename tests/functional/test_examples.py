@@ -42,8 +42,8 @@ REVERB_PRESETS = choices(reverb_preset_names, k=5)
 WAVEFORMS = ['sine', 'square', 'sawtooth',
              'triangle', 'impulse', 'white-noise']
 
-skipif_travis_macos = mark.skipif(system()=='Darwin' and environ.get('TRAVIS'),
-                                  reason='Travis CI for macOS')
+travis_macos = bool(environ.get('TRAVIS')) and system() == 'Darwin'
+skipif_travis_macos = mark.skipif(travis_macos, reason='Travis CI for macOS')
 
 
 def capture(*argv):
