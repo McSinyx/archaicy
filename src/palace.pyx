@@ -2088,6 +2088,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def density(self) -> float:
+        """Density, from 0.0 to 1.0."""
         return self.properties.density
 
     @density.setter
@@ -2098,6 +2099,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def diffusion(self) -> float:
+        """Diffusion, from 0.0 to 1.0."""
         return self.properties.diffusion
 
     @diffusion.setter
@@ -2108,6 +2110,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def gain(self) -> float:
+        """Gain, from 0.0 to 1.0."""
         return self.properties.gain
 
     @gain.setter
@@ -2118,6 +2121,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def gain_hf(self) -> float:
+        """Gain HF, from 0.0 to 1.0."""
         return self.properties.gain_hf
 
     @gain_hf.setter
@@ -2128,6 +2132,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def gain_lf(self) -> float:
+        """Gain LF, from 0.0 to 1.0."""
         return self.properties.gain_lf
 
     @gain_lf.setter
@@ -2138,6 +2143,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_time(self) -> float:
+        """Decay time, from 0.1 to 20.0."""
         return self.properties.decay_time
 
     @decay_time.setter
@@ -2148,6 +2154,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_hf_ratio(self) -> float:
+        """Decay HF ratio, from 0.1 to 20.0."""
         return self.properties.decay_hf_ratio
 
     @decay_hf_ratio.setter
@@ -2158,6 +2165,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_lf_ratio(self) -> float:
+        """Decay LF ratio, from 0.1 to 20.0."""
         return self.properties.decay_lf_ratio
 
     @decay_lf_ratio.setter
@@ -2168,6 +2176,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def reflections_gain(self) -> float:
+        """Reflections gain, from 0.0 to 3.16."""
         return self.properties.reflections_gain
 
     @reflections_gain.setter
@@ -2178,6 +2187,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def reflections_delay(self) -> float:
+        """Reflections delay, from 0.0 to 0.3."""
         return self.properties.reflections_delay
 
     @reflections_delay.setter
@@ -2188,6 +2198,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def reflections_pan(self) -> Vector3:
+        """Reflections pan, 3D vector of magnitude between 0 and 1."""
         return self.properties.reflections_pan
 
     @reflections_pan.setter
@@ -2200,6 +2211,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def late_reverb_gain(self) -> float:
+        """Late reverb gain, from 0.0 to 10.0."""
         return self.properties.late_reverb_gain
 
     @late_reverb_gain.setter
@@ -2210,6 +2222,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def late_reverb_delay(self) -> float:
+        """Late reverb delay, from 0.0 to 0.1."""
         return self.properties.late_reverb_delay
 
     @late_reverb_delay.setter
@@ -2220,6 +2233,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def late_reverb_pan(self) -> Vector3:
+        """Late reverb pan, 3D vector of magnitude between 0 and 1."""
         return self.properties.late_reverb_pan
 
     @late_reverb_pan.setter
@@ -2232,6 +2246,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def echo_time(self) -> float:
+        """Echo time, from 0,075 to 0.25."""
         return self.properties.echo_time
 
     @echo_time.setter
@@ -2242,6 +2257,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def echo_depth(self) -> float:
+        """Echo depth, from 0.0 to 1.0."""
         return self.properties.echo_depth
 
     @echo_depth.setter
@@ -2252,6 +2268,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def modulation_time(self) -> float:
+        """Modulation time, from 0.004 to 4.0."""
         return self.properties.modulation_time
 
     @modulation_time.setter
@@ -2262,6 +2279,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def modulation_depth(self) -> float:
+        """Modulation depth, from 0.0 to 1.0."""
         return self.properties.modulation_depth
 
     @modulation_depth.setter
@@ -2272,6 +2290,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def air_absorption_gain_hf(self) -> float:
+        """Air absorption gain, from 0.892 to 1.0."""
         return self.properties.air_absorption_gain_hf
 
     @air_absorption_gain_hf.setter
@@ -2282,6 +2301,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def hf_reference(self) -> float:
+        """HF reference, from 1000.0 to 20000.0."""
         return self.properties.hf_reference
 
     @hf_reference.setter
@@ -2292,6 +2312,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def lf_reference(self) -> float:
+        """LF reference, from 20.0 to 1000.0."""
         return self.properties.lf_reference
 
     @lf_reference.setter
@@ -2302,6 +2323,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def room_rolloff_factor(self) -> float:
+        """Room rolloff factor, from 0.0 to 10.0."""
         return self.properties.room_rolloff_factor
 
     @room_rolloff_factor.setter
@@ -2312,6 +2334,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_hf_limit(self) -> bool:
+        """Decay HF limit, either TRUE or FALSE."""
         return self.properties.decay_hf_limit
 
     @decay_hf_limit.setter
