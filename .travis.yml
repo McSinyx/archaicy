@@ -9,7 +9,6 @@ env:
   global:
     - TWINE_USERNAME=__token__
     - MACOSX_DEPLOYMENT_TARGET=10.9
-    - CIBW_ENVIRONMENT_MACOS="DYLD_FALLBACK_LIBRARY_PATH=/usr/local/lib"
     - CIBW_BEFORE_BUILD_MACOS=.ci/before-build-macos
     - CIBW_BEFORE_BUILD_LINUX=.ci/before-build-manylinux2014
     - CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014
