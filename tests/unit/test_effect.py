@@ -62,7 +62,6 @@ def test_reverb_send_auto(context):
         fx.send_auto = True
 
 
-@mark.xfail
 def test_reverb_density(context):
     """Test ReverbEffect's property density."""
     with ReverbEffect() as fx:
@@ -77,7 +76,6 @@ def test_reverb_density(context):
         with raises(ValueError): fx.density = -1
 
 
-@mark.xfail
 def test_reverb_diffusion(context):
     """Test ReverbEffect's property diffusion."""
     with ReverbEffect() as fx:
@@ -92,7 +90,6 @@ def test_reverb_diffusion(context):
         with raises(ValueError): fx.diffusion = -1
 
 
-@mark.xfail
 def test_reverb_gain(context):
     """Test ReverbEffect's property gain."""
     with ReverbEffect() as fx:
@@ -107,7 +104,6 @@ def test_reverb_gain(context):
         with raises(ValueError): fx.gain = -1
 
 
-@mark.xfail
 def test_reverb_gain_hf(context):
     """Test ReverbEffect's property gain_hf."""
     with ReverbEffect() as fx:
@@ -122,7 +118,6 @@ def test_reverb_gain_hf(context):
         with raises(ValueError): fx.gain_hf = -1
 
 
-@mark.xfail
 def test_reverb_gain_lf(context):
     """Test ReverbEffect's property gain_lf."""
     with ReverbEffect() as fx:
@@ -137,7 +132,6 @@ def test_reverb_gain_lf(context):
         with raises(ValueError): fx.gain_lf = -1
 
 
-@mark.xfail
 def test_reverb_decay_time(context):
     """Test ReverbEffect's property decay_time."""
     with ReverbEffect() as fx:
@@ -152,7 +146,6 @@ def test_reverb_decay_time(context):
         with raises(ValueError): fx.decay_time = -1
 
 
-@mark.xfail
 def test_reverb_decay_hf_ratio(context):
     """Test ReverbEffect's property decay_hf_ratio."""
     with ReverbEffect() as fx:
@@ -167,7 +160,6 @@ def test_reverb_decay_hf_ratio(context):
         with raises(ValueError): fx.decay_hf_ratio = -1
 
 
-@mark.xfail
 def test_reverb_decay_lf_ratio(context):
     """Test ReverbEffect's property decay_lf_ratio."""
     with ReverbEffect() as fx:
@@ -182,7 +174,6 @@ def test_reverb_decay_lf_ratio(context):
         with raises(ValueError): fx.decay_lf_ratio = -1
 
 
-@mark.xfail
 def test_reverb_reflections_gain(context):
     """Test ReverbEffect's property reflections_gain."""
     with ReverbEffect() as fx:
@@ -197,7 +188,6 @@ def test_reverb_reflections_gain(context):
         with raises(ValueError): fx.reflections_gain = -1
 
 
-@mark.xfail
 def test_reverb_reflections_delay(context):
     """Test ReverbEffect's property reflections_delay."""
     with ReverbEffect() as fx:
@@ -210,7 +200,6 @@ def test_reverb_reflections_delay(context):
         with raises(ValueError): fx.reflections_delay = -1
 
 
-@mark.xfail
 def test_reverb_reflections_pan(context):
     """Test ReverbEffect's property reflections_pan."""
     with ReverbEffect() as fx:
@@ -227,7 +216,6 @@ def test_reverb_reflections_pan(context):
         with raises(ValueError): fx.reflections_pan = -2, 0, 0
 
 
-@mark.xfail
 def test_reverb_late_reverb_gain(context):
     """Test ReverbEffect's property late_reverb_gain."""
     with ReverbEffect() as fx:
@@ -242,7 +230,6 @@ def test_reverb_late_reverb_gain(context):
         with raises(ValueError): fx.late_reverb_gain = -1
 
 
-@mark.xfail
 def test_reverb_late_reverb_delay(context):
     """Test ReverbEffect's property late_reverb_delay."""
     with ReverbEffect() as fx:
@@ -257,7 +244,6 @@ def test_reverb_late_reverb_delay(context):
         with raises(ValueError): fx.late_reverb_delay = -1
 
 
-@mark.xfail
 def test_reverb_late_reverb_pan(context):
     """Test ReverbEffect's property late_reverb_pan."""
     with ReverbEffect() as fx:
@@ -274,7 +260,6 @@ def test_reverb_late_reverb_pan(context):
         with raises(ValueError): fx.late_reverb_pan = -2, 0, 0
 
 
-@mark.xfail
 def test_reverb_echo_time(context):
     """Test ReverbEffect's property echo_time."""
     with ReverbEffect() as fx:
@@ -287,7 +272,6 @@ def test_reverb_echo_time(context):
         with raises(ValueError): fx.echo_time = 0.5
 
 
-@mark.xfail
 def test_reverb_echo_depth(context):
     """Test ReverbEffect's property echo_depth."""
     with ReverbEffect() as fx:
@@ -302,7 +286,6 @@ def test_reverb_echo_depth(context):
         with raises(ValueError): fx.echo_depth = -1
 
 
-@mark.xfail
 def test_reverb_modulation_time(context):
     """Test ReverbEffect's property modulation_time."""
     with ReverbEffect() as fx:
@@ -317,7 +300,6 @@ def test_reverb_modulation_time(context):
         with raises(ValueError): fx.modulation_time = 0
 
 
-@mark.xfail
 def test_reverb_modulation_depth(context):
     """Test ReverbEffect's property modulation_depth."""
     with ReverbEffect() as fx:
@@ -332,7 +314,6 @@ def test_reverb_modulation_depth(context):
         with raises(ValueError): fx.modulation_depth = -1
 
 
-@mark.xfail
 def test_reverb_air_absorption_gain_hf(context):
     """Test ReverbEffect's property air_absorption_gain_hf."""
     with ReverbEffect() as fx:
@@ -347,7 +328,6 @@ def test_reverb_air_absorption_gain_hf(context):
         with raises(ValueError): fx.air_absorption_gain_hf = 0.5
 
 
-@mark.xfail
 def test_reverb_hf_reference(context):
     """Test ReverbEffect's property hf_reference."""
     with ReverbEffect() as fx:
@@ -362,7 +342,6 @@ def test_reverb_hf_reference(context):
         with raises(ValueError): fx.hf_reference = 999
 
 
-@mark.xfail
 def test_reverb_lf_reference(context):
     """Test ReverbEffect's property lf_reference."""
     with ReverbEffect() as fx:
@@ -377,7 +356,6 @@ def test_reverb_lf_reference(context):
         with raises(ValueError): fx.lf_reference = 1001
 
 
-@mark.xfail
 def test_reverb_room_rolloff_factor(context):
     """Test ReverbEffect's property room_rolloff_factor."""
     with ReverbEffect() as fx:
