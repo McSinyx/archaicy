@@ -2385,9 +2385,9 @@ cdef class ReverbEffect(BaseEffect):
     @decay_hf_limit.setter
     def decay_hf_limit(self, value: bool) -> None:
         if value == True:
-            self.properties.waveform = 1
+            self.properties.decay_hf_limit = 1
         elif value == False:
-            self.properties.waveform = 0
+            self.properties.decay_hf_limit = 0
         else:
             raise ValueError(f'invalid high frequency decay limit: {value}')
         self.impl.set_reverb_properties(self.properties)
