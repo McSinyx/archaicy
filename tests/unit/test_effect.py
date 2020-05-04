@@ -93,7 +93,7 @@ def test_reverb_diffusion(context):
 def test_reverb_gain(context):
     """Test ReverbEffect's property gain."""
     with ReverbEffect() as fx:
-        assert isclose(fx.gain, 0.32)
+        assert isclose(fx.gain, 0.316)
         fx.gain = 5/7
         assert isclose(fx.gain, 5/7)
         fx.gain = 0
@@ -121,7 +121,7 @@ def test_reverb_gain_hf(context):
 def test_reverb_gain_lf(context):
     """Test ReverbEffect's property gain_lf."""
     with ReverbEffect() as fx:
-        assert fx.gain_lf == 0
+        assert fx.gain_lf == 1
         fx.gain_lf = 5/7
         assert isclose(fx.gain_lf, 5/7)
         fx.gain_lf = 0
@@ -156,7 +156,7 @@ def test_reverb_decay_hf_ratio(context):
         assert isclose(fx.decay_hf_ratio, 0.1)
         fx.decay_hf_ratio = 2
         assert fx.decay_hf_ratio == 2
-        with raises(ValueError): fx.decay_hf_ratio = 3
+        with raises(ValueError): fx.decay_hf_ratio = 21
         with raises(ValueError): fx.decay_hf_ratio = -1
 
 
@@ -170,7 +170,7 @@ def test_reverb_decay_lf_ratio(context):
         assert isclose(fx.decay_lf_ratio, 0.1)
         fx.decay_lf_ratio = 2
         assert fx.decay_lf_ratio == 2
-        with raises(ValueError): fx.decay_lf_ratio = 3
+        with raises(ValueError): fx.decay_lf_ratio = 21
         with raises(ValueError): fx.decay_lf_ratio = -1
 
 
@@ -206,8 +206,7 @@ def test_reverb_reflections_pan(context):
         assert allclose(fx.reflections_pan, (0, 0, 0))
         fx.reflections_pan = 5/7, -69/420, 6/9
         assert allclose(fx.reflections_pan, (5/7, -69/420, 6/9))
-        fx.reflections_pan = 1, 1, 1
-        assert allclose(fx.reflections_pan, (1, 1, 1))
+        with raises(ValueError): fx.reflections_pan = 1, 1, 1
         with raises(ValueError): fx.reflections_pan = 0, 0, 2
         with raises(ValueError): fx.reflections_pan = 0, 2, 0
         with raises(ValueError): fx.reflections_pan = 2, 0, 0
@@ -250,8 +249,7 @@ def test_reverb_late_reverb_pan(context):
         assert allclose(fx.late_reverb_pan, (0, 0, 0))
         fx.late_reverb_pan = 5/7, -69/420, 6/9
         assert allclose(fx.late_reverb_pan, (5/7, -69/420, 6/9))
-        fx.late_reverb_pan = 1, 1, 1
-        assert allclose(fx.late_reverb_pan, (1, 1, 1))
+        with raises(ValueError): fx.late_reverb_pan = 1, 1, 1
         with raises(ValueError): fx.late_reverb_pan = 0, 0, 2
         with raises(ValueError): fx.late_reverb_pan = 0, 2, 0
         with raises(ValueError): fx.late_reverb_pan = 2, 0, 0
@@ -289,7 +287,7 @@ def test_reverb_echo_depth(context):
 def test_reverb_modulation_time(context):
     """Test ReverbEffect's property modulation_time."""
     with ReverbEffect() as fx:
-        assert isclose(0.25)
+        assert isclose(fx.modulation_time, 0.25)
         fx.modulation_time = 5/7
         assert isclose(fx.modulation_time, 5/7)
         fx.modulation_time = 0.04

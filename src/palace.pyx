@@ -2128,26 +2128,26 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def gain_hf(self) -> float:
-        """Gain HF, from 0.0 to 1.0."""
+        """High frequency gain, from 0.0 to 1.0."""
         return self.properties.gain_hf
 
     @gain_hf.setter
     def gain_hf(self, value: float) -> None:
         if value < 0.0 or value > 1.0:
-            raise ValueError(f'invalid gain hf: {value}')
+            raise ValueError(f'invalid high frequency gain : {value}')
         self.properties.gain_hf = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
     @property
     def gain_lf(self) -> float:
-        """Gain LF, from 0.0 to 1.0."""
+        """Low frequency gain, from 0.0 to 1.0."""
         return self.properties.gain_lf
 
     @gain_lf.setter
     def gain_lf(self, value: float) -> None:
         if value < 0.0 or value > 1.0:
-            raise ValueError(f'invalid gain lf: {value}')
+            raise ValueError(f'invalid low frequency gain: {value}')
         self.properties.gain_lf = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
@@ -2167,26 +2167,26 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_hf_ratio(self) -> float:
-        """Decay HF ratio, from 0.1 to 20.0."""
+        """High frequency decay ratio, from 0.1 to 20.0."""
         return self.properties.decay_hf_ratio
 
     @decay_hf_ratio.setter
     def decay_hf_ratio(self, value: float) -> None:
         if value < 0.1 or value > 20.0:
-            raise ValueError(f'invalid decay hf ratio: {value}')
+            raise ValueError(f'invalid high frequency decay ratio: {value}')
         self.properties.decay_hf_ratio = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
     @property
     def decay_lf_ratio(self) -> float:
-        """Decay LF ratio, from 0.1 to 20.0."""
+        """Low frequency decay ratio, from 0.1 to 20.0."""
         return self.properties.decay_lf_ratio
 
     @decay_lf_ratio.setter
     def decay_lf_ratio(self, value: float) -> None:
         if value < 0.1 or value > 20.0:
-            raise ValueError(f'invalid decay lf ratio: {value}')
+            raise ValueError(f'invalid low frequency decay ratio: {value}')
         self.properties.decay_lf_ratio = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
@@ -2327,39 +2327,39 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def air_absorption_gain_hf(self) -> float:
-        """Air absorption gain, from 0.892 to 1.0."""
+        """High frequency air absorption gain, from 0.892 to 1.0."""
         return self.properties.air_absorption_gain_hf
 
     @air_absorption_gain_hf.setter
     def air_absorption_gain_hf(self, value: float) -> None:
         if value < 0.892 or value > 1.0:
-            raise ValueError(f'invalid air absorption gain hf: {value}')
+            raise ValueError(f'invalid high frequency air absorption gain: {value}')
         self.properties.air_absorption_gain_hf = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
     @property
     def hf_reference(self) -> float:
-        """HF reference, from 1000.0 to 20000.0."""
+        """High frequency reference, from 1000.0 to 20000.0."""
         return self.properties.hf_reference
 
     @hf_reference.setter
     def hf_reference(self, value: float) -> None:
         if value < 1000.0 or value > 20000.0:
-            raise ValueError(f'invalid hf reference: {value}')
+            raise ValueError(f'invalid high frequency reference: {value}')
         self.properties.hf_reference = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
     @property
     def lf_reference(self) -> float:
-        """LF reference, from 20.0 to 1000.0."""
+        """Low frequency reference, from 20.0 to 1000.0."""
         return self.properties.lf_reference
 
     @lf_reference.setter
     def lf_reference(self, value: float) -> None:
         if value < 20.0 or value > 1000.0:
-            raise ValueError(f'invalid lf reference: {value}')
+            raise ValueError(f'invalid low frequency reference: {value}')
         self.properties.lf_reference = value
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
@@ -2379,14 +2379,17 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_hf_limit(self) -> bool:
-        """Decay HF limit, either TRUE or FALSE."""
-        return self.properties.decay_hf_limit
+        """High frequency decay limit, either TRUE or FALSE."""
+        return True if self.properties.decay_hf_limit else False
 
     @decay_hf_limit.setter
     def decay_hf_limit(self, value: bool) -> None:
-        if value != True or value != False:
-            raise ValueError(f'invalid decay hf limit: {value}')
-        self.properties.decay_hf_limit = value
+        if value == True:
+            self.properties.waveform = 1
+        elif value == False:
+            self.properties.waveform = 0
+        else:
+            raise ValueError(f'invalid high frequency decay limit: {value}')
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
