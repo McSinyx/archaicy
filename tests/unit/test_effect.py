@@ -371,11 +371,11 @@ def test_reverb_room_rolloff_factor(context):
 def test_reverb_decay_hf_limit(context):
     """Test ReverbEffect's property decay_hf_limit."""
     with ReverbEffect() as fx:
-        assert fx.decay_hf_limit
+        assert fx.decay_hf_limit is True
         fx.decay_hf_limit = False
-        assert not fx.decay_hf_limit
+        assert fx.decay_hf_limit is False
         fx.decay_hf_limit = True
-        assert fx.decay_hf_limit
+        assert fx.decay_hf_limit is True
 
 
 def test_chorus_waveform(context):

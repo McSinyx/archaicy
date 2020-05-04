@@ -2382,7 +2382,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def decay_hf_limit(self) -> bool:
-        """High frequency decay limit, either TRUE or FALSE."""
+        """High frequency decay limit."""
         return True if self.properties.decay_hf_limit else False
 
     @decay_hf_limit.setter
