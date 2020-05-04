@@ -2384,12 +2384,7 @@ cdef class ReverbEffect(BaseEffect):
 
     @decay_hf_limit.setter
     def decay_hf_limit(self, value: bool) -> None:
-        if value == True:
-            self.properties.decay_hf_limit = 1
-        elif value == False:
-            self.properties.decay_hf_limit = 0
-        else:
-            raise ValueError(f'invalid high frequency decay limit: {value}')
+        self.properties.decay_hf_limit = bool(value)
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 

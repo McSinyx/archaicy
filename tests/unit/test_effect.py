@@ -20,7 +20,7 @@
 """This pytest module verifies environmental effects."""
 
 from palace import BaseEffect, ChorusEffect, ReverbEffect, Source
-from pytest import mark, raises
+from pytest import raises
 
 from fmath import isclose, allclose
 
@@ -399,19 +399,6 @@ def test_chorus_phase(context):
         assert fx.phase == -180
         with raises(ValueError): fx.phase = 181
         with raises(ValueError): fx.phase = -181
-
-
-@mark.xfail
-def test_chorus_rate(context):
-    """Test ChorusEffect's property rate."""
-    with ChorusEffect() as fx:
-        assert isclose(fx.rate, 1.1)
-        fx.rate = 0
-        assert fx.rate == 0
-        fx.rate = 10
-        assert fx.rate == 10
-        with raises(ValueError): fx.rate = 11
-        with raises(ValueError): fx.rate = -1
 
 
 def test_chorus_depth(context):
