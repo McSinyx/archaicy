@@ -89,7 +89,6 @@ from types import TracebackType
 from typing import (Any, Callable, Dict, Iterable, Iterator,
                     List, Optional, Sequence, Tuple, Type)
 from warnings import catch_warnings, simplefilter, warn
-from numpy import linalg as LA
 
 try:    # Python 3.8+
     from typing import Protocol
@@ -2219,16 +2218,18 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def reflections_pan(self) -> Vector3:
-        """Reflections pan, 3D vector of magnitude between 0 and 1."""
+        """Reflections as 3D vector of magnitude between 0 and 1."""
         return self.properties.reflections_pan
 
     @reflections_pan.setter
     def reflections_pan(self, value: Vector3) -> None:
-        if LA.norm(value) < 0 or LA.norm(value) > 1:
+        x, y, z = value
+        magnitude = x*x + y*y + z*z
+        if magnitude < 0 or magnitude > 1:
             raise ValueError(f'invalid reflections pan: {value}')
-        self.properties.reflections_pan[0] = value[0]
-        self.properties.reflections_pan[1] = value[1]
-        self.properties.reflections_pan[2] = value[2]
+        self.properties.reflections_pan[0] = x
+        self.properties.reflections_pan[1] = y
+        self.properties.reflections_pan[2] = z
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
@@ -2260,16 +2261,18 @@ cdef class ReverbEffect(BaseEffect):
 
     @property
     def late_reverb_pan(self) -> Vector3:
-        """Late reverb pan, 3D vector of magnitude between 0 and 1."""
+        """Late reverb as 3D vector of magnitude between 0 and 1."""
         return self.properties.late_reverb_pan
 
     @late_reverb_pan.setter
     def late_reverb_pan(self, value: Vector3) -> None:
-        if LA.norm(value) < 0 or LA.norm(value) > 1:
+        x, y, z = value
+        magnitude = x*x + y*y + z*z
+        if magnitude < 0 or magnitude > 1:
             raise ValueError(f'invalid late reverb pan: {value}')
-        self.properties.late_reverb_pan[0] = value[0]
-        self.properties.late_reverb_pan[1] = value[1]
-        self.properties.late_reverb_pan[2] = value[2]
+        self.properties.late_reverb_pan[0] = x
+        self.properties.late_reverb_pan[1] = y
+        self.properties.late_reverb_pan[2] = z
         self.impl.set_reverb_properties(self.properties)
         self.slot.apply_effect(self.impl)
 
