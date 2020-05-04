@@ -21,4 +21,4 @@ install:
   - cmake --build %APPVEYOR_BUILD_FOLDER%\..\alure\build --config Release --target install
   - py -3 -m pip install cibuildwheel
 
-build_script: echo py -3 -m cibuildwheel --output-dir wheelhouse
+build_script: py -3 -m cibuildwheel --output-dir wheelhouse
