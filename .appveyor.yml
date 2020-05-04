@@ -22,3 +22,7 @@ install:
   - py -3 -m pip install cibuildwheel
 
 build_script: py -3 -m cibuildwheel --output-dir wheelhouse
+
+on_failure:
+  - echo "Failed build, here is the source code"
+  - type c:\projects\palace\src\palace.cpp
