@@ -93,7 +93,7 @@ def test_reverb_diffusion(context):
 def test_reverb_gain(context):
     """Test ReverbEffect's property gain."""
     with ReverbEffect() as fx:
-        assert isclose(fx.gain, 0.316)
+        assert isclose(fx.gain, 0.3162)
         fx.gain = 5/7
         assert isclose(fx.gain, 5/7)
         fx.gain = 0
@@ -107,7 +107,7 @@ def test_reverb_gain(context):
 def test_reverb_gain_hf(context):
     """Test ReverbEffect's property gain_hf."""
     with ReverbEffect() as fx:
-        assert isclose(fx.gain_hf, 0.89)
+        assert isclose(fx.gain_hf, 0.8913)
         fx.gain_hf = 5/7
         assert isclose(fx.gain_hf, 5/7)
         fx.gain_hf = 0
@@ -218,7 +218,7 @@ def test_reverb_reflections_pan(context):
 def test_reverb_late_reverb_gain(context):
     """Test ReverbEffect's property late_reverb_gain."""
     with ReverbEffect() as fx:
-        assert isclose(fx.late_reverb_gain, 1.26)
+        assert isclose(fx.late_reverb_gain, 1.2589)
         fx.late_reverb_gain = 5/7
         assert isclose(fx.late_reverb_gain, 5/7)
         fx.late_reverb_gain = 0
@@ -315,11 +315,11 @@ def test_reverb_modulation_depth(context):
 def test_reverb_air_absorption_gain_hf(context):
     """Test ReverbEffect's property air_absorption_gain_hf."""
     with ReverbEffect() as fx:
-        assert isclose(fx.air_absorption_gain_hf, 0.994)
+        assert isclose(fx.air_absorption_gain_hf, 0.9943)
         fx.air_absorption_gain_hf = 0.999
         assert isclose(fx.air_absorption_gain_hf, 0.999)
         fx.air_absorption_gain_hf = 0.892
-        assert isclose(fx.air_absorption_gain_hf, 892)
+        assert isclose(fx.air_absorption_gain_hf, 0.892)
         fx.air_absorption_gain_hf = 1
         assert fx.air_absorption_gain_hf == 1
         with raises(ValueError): fx.air_absorption_gain_hf = 7/5
