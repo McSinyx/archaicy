@@ -152,17 +152,17 @@ cdef extern from 'alure2.h' namespace 'alure' nogil:
     cdef unsigned frames_to_bytes 'FramesToBytes'(unsigned, ChannelConfig, SampleType) except +
     cdef unsigned bytes_to_frames 'BytesToFrames'(unsigned, ChannelConfig, SampleType)
 
-    cdef enum DeviceEnumeration:
+    ctypedef enum DeviceEnumeration:
         Basic 'alure::DeviceEnumeration::Basic'
         Full 'alure::DeviceEnumeration::Full'
         Capture 'alure::DeviceEnumeration::Capture'
 
-    cdef enum DefaultDeviceType:
+    ctypedef enum DefaultDeviceType:
         Basic 'alure::DefaultDeviceType::Basic'
         Full 'alure::DefaultDeviceType::Full'
         Capture 'alure::DefaultDeviceType::Capture'
 
-    cdef enum PlaybackName:
+    ctypedef enum PlaybackName:
         Basic 'alure::PlaybackName::Basic'
         Full 'alure::PlaybackName::Full'
 
