@@ -59,6 +59,8 @@ html_sidebars = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_theme_options = {'fixed_sidebar': True, 'show_relbars': True}
+
 
 # -- Options for LaTeX output ------------------------------------------------
 
