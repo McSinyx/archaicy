@@ -418,6 +418,7 @@ cdef class DeviceNames:
     capture : Tuple[str, ...]
         Capture device names, with the first one being the default.
     """
+
     cdef readonly tuple basic
     cdef readonly tuple full
     cdef readonly tuple capture
@@ -473,6 +474,7 @@ cdef class Device:
     --------
     device_names : Available device names
     """
+
     cdef alure.Device impl
 
     def __init__(self, name: str = '', fallback: Iterable[str] = ()) -> None:
@@ -689,6 +691,7 @@ cdef class Context:
     RuntimeError
         If context creation fails.
     """
+
     cdef alure.Context impl
     cdef alure.Context previous
     cdef readonly Device device
@@ -893,6 +896,7 @@ cdef class Listener:
     RuntimeError
         If there is neither any context specified nor current.
     """
+
     cdef alure.Listener impl
 
     def __init__(self, context: Optional[Context] = None) -> None:
@@ -976,6 +980,7 @@ cdef class Buffer:
     RuntimeError
         If there is neither any context specified nor current.
     """
+
     cdef alure.Buffer impl
     cdef Context context
     cdef readonly str name
@@ -1178,6 +1183,7 @@ cdef class Source:
     RuntimeError
         If there is neither any context specified nor current.
     """
+
     cdef alure.Source impl
 
     def __init__(self, context: Optional[Context] = None) -> None:
@@ -1788,6 +1794,7 @@ cdef class AuxiliarySends:
     by indexing the object with a nonnegative integer less than
     the device's `max_auxiliary_sends`.
     """
+
     cdef Source source
 
     def __init__(self, source: Source) -> None:
@@ -1975,6 +1982,7 @@ cdef class BaseEffect:
     ReverbEffect : Environmental reverberation effect
     ChorusEffect : Chorus effect
     """
+
     cdef alure.AuxiliaryEffectSlot slot
     cdef alure.Effect impl
 
@@ -2073,6 +2081,7 @@ cdef class ReverbEffect(BaseEffect):
     RuntimeError
         If there is neither any context specified nor current.
     """
+
     cdef alure.EFXEAXREVERBPROPERTIES properties
 
     def __init__(self, preset: str = 'GENERIC',
@@ -2428,6 +2437,7 @@ cdef class ChorusEffect(BaseEffect):
     RuntimeError
         If there is neither any context specified nor current.
     """
+
     cdef alure.EFXCHORUSPROPERTIES properties
 
     def __init__(self, waveform: str = 'triangle',
@@ -2540,6 +2550,7 @@ cdef class Decoder:
     may only initialize an internal one.  To use registered factories,
     please call the module-level `decode` function instead.
     """
+
     cdef shared_ptr[alure.Decoder] pimpl
 
     def __init__(self, name: str, context: Optional[Context] = None) -> None:
@@ -2664,6 +2675,7 @@ cdef class _BaseDecoder(Decoder):
 
     This class is NOT meant to be instantiated.
     """
+
     def __cinit__(self, *args, **kwargs) -> None:
         self.pimpl = shared_ptr[alure.Decoder](new CppDecoder(self))
 
@@ -2881,6 +2893,7 @@ cdef class MessageHandler:
 
     Exceptions raised from `MessageHandler` instances are ignored.
     """
+
     cdef list stopped_sources
 
     def __cinit__(self, *args, **kwargs) -> None:
