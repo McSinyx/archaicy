@@ -235,7 +235,7 @@ def query_extension(name: str) -> bool:
 def thread_local(state: bool) -> Iterator[None]:
     """Return a context manager controlling preference of local thread.
 
-    Effectively, it sets the fallback value for the `thread` argument
+    Effectively, it sets fallback value for `thread` argument
     for `current_context` and `use_context`.
 
     Initially, globally current `Context` is preferred.
@@ -554,8 +554,7 @@ cdef class Device:
     def efx_version(self) -> Tuple[int, int]:
         """EFX version supported by this device.
 
-        If the `ALC_EXT_EFX` extension is unsupported,
-        this will be `(0, 0)`.
+        If `ALC_EXT_EFX` extension is unsupported, this will be (0, 0).
         """
         cdef alure.Version version = self.impl.get_efx_version()
         return version.get_major(), version.get_minor()
@@ -580,7 +579,7 @@ cdef class Device:
         The order is retained from OpenAL, such that the index of
         a given name is the ID to use with `ALC_HRTF_ID_SOFT`.
 
-        If the `ALC_SOFT_HRTF` extension is unavailable,
+        If `ALC_SOFT_HRTF` extension is unavailable,
         this will be an empty list.
         """
         return self.impl.enumerate_hrtf_names()
@@ -589,7 +588,7 @@ cdef class Device:
     def hrtf_enabled(self) -> bool:
         """Whether HRTF is enabled on the device.
 
-        If the `ALC_SOFT_HRTF` extension is unavailable,
+        If `ALC_SOFT_HRTF` extension is unavailable,
         this will return False although there could still be
         HRTF applied at a lower hardware level.
         """
@@ -607,7 +606,7 @@ cdef class Device:
     def reset(self, attrs: Dict[int, int] = {}) -> None:
         """Reset the device, using the specified attributes.
 
-        If the `ALC_SOFT_HRTF` extension is unavailable,
+        If `ALC_SOFT_HRTF` extension is unavailable,
         this will be a no-op.
         """
         self.impl.reset(mkattrs(attrs.items()))
@@ -618,7 +617,7 @@ cdef class Device:
         Multiple calls are allowed but it is not reference counted,
         so the device will resume after one `resume_dsp` call.
 
-        This requires the `ALC_SOFT_pause_device` extension.
+        This requires `ALC_SOFT_pause_device` extension.
         """
         self.impl.pause_dsp()
 
@@ -801,8 +800,8 @@ cdef class Context:
     def available_resamplers(self) -> List[str]:
         """The list of resamplers supported by the context.
 
-        If the `AL_SOFT_source_resampler` extension is unsupported
-        this will be an empty list, otherwise there would be
+        If `AL_SOFT_source_resampler` extension is unsupported,
+        this will be an empty list. Otherwise there would be
         at least one entry.
 
         This method require the context to be current.
@@ -815,8 +814,8 @@ cdef class Context:
     def default_resampler_index(self) -> int:
         """The context's default resampler index.
 
-        If the `AL_SOFT_source_resampler` extension is unsupported
-        the resampler list will be empty and this will return 0.
+        If `AL_SOFT_source_resampler` extension is unsupported,
+        this will return 0.
 
         If you try to access the resampler list with this index
         without extension, undefined behavior will occur
@@ -1111,7 +1110,7 @@ cdef class Buffer:
     def loop_points(self) -> Tuple[int, int]:
         """Loop points for looping sources.
 
-        If the `AL_SOFT_loop_points` extension is not supported by the
+        If `AL_SOFT_loop_points` extension is not supported by the
         current context, `start = 0` and `end = length` respectively.
         Otherwise, `start < end <= length`.
 
@@ -1303,8 +1302,10 @@ cdef class Source:
 
     @property
     def offset(self) -> int:
-        """Source offset in sample frames.  For streaming sources
-        this will be the offset based on the decoder's read position.
+        """Source offset in sample frames.
+
+        For streaming sources, this will be 
+        based on decoder's read position.
         """
         return self.impl.get_sample_offset()
 
@@ -1316,8 +1317,8 @@ cdef class Source:
     def latency(self) -> int:
         """Source latency in nanoseconds.
 
-        If the `AL_SOFT_source_latency` extension is unsupported,
-        the latency will be 0.
+        If `AL_SOFT_source_latency` extension is unsupported,
+        this will be 0.
         """
         return self.impl.get_sample_offset_latency().second.count()
 
@@ -1325,7 +1326,7 @@ cdef class Source:
     def offset_seconds(self) -> float:
         """Source offset in seconds.
 
-        For streaming sources this will be the offset based on
+        For streaming sources, this will be based on
         the decoder's read position.
         """
         return self.impl.get_sec_offset().count()
@@ -1334,8 +1335,8 @@ cdef class Source:
     def latency_seconds(self) -> float:
         """Source latency in seconds.
 
-        If the `AL_SOFT_source_latency` extension is unsupported,
-        the latency will be 0.
+        If `AL_SOFT_source_latency` extension is unsupported,
+        this will be 0.
         """
         return self.impl.get_sec_offset_latency().second.count()
 
@@ -1476,7 +1477,7 @@ cdef class Source:
 
         Notes
         -----
-        Unlike the `AL_EXT_BFORMAT` extension this property
+        Unlike `AL_EXT_BFORMAT` extension this property
         comes from, this also affects the facing direction.
         """
         cdef pair[alure.Vector3, alure.Vector3] o = self.impl.get_orientation()
@@ -1610,7 +1611,7 @@ cdef class Source:
     def radius(self) -> float:
         """Radius of the source, as if it is a sound-emitting sphere.
 
-        This has no effect without the `AL_EXT_SOURCE_RADIUS` extension.
+        This has no effect without `AL_EXT_SOURCE_RADIUS` extension.
 
         Raises
         ------
@@ -1631,7 +1632,7 @@ cdef class Source:
         and positive values going left.
 
         This is only used for stereo playback and has no effect
-        without the `AL_EXT_STEREO_ANGLES` extension.
+        without `AL_EXT_STEREO_ANGLES` extension.
         """
         return self.impl.get_stereo_angles()
 
@@ -1650,7 +1651,7 @@ cdef class Source:
         a mono sound or not, default).
 
         This has no effect without
-        the `AL_SOFT_source_spatialize` extension.
+        `AL_SOFT_source_spatialize` extension.
         """
         cdef alure.Spatialize value = self.impl.get_3d_spatialize()
         if value == alure.Spatialize.Auto: return None
@@ -1869,7 +1870,7 @@ cdef class SourceGroup:
 
     @property
     def parent_group(self) -> SourceGroup:
-        """The source group this source group is a child of.
+        """The parent source group of this source group.
 
         Raises
         ------
@@ -2596,7 +2597,7 @@ cdef class Decoder:
         return self.length / self.frequency
 
     def seek(self, pos: int) -> bool:
-        """Seek to pos, specified in sample frames.
+        """Seek to `pos`, specified in sample frames.
 
         Return if the seek was successful.
         """
@@ -2818,6 +2819,7 @@ class FileIO(Protocol):
     Since PEP 544 is only implemented in Python 3.8+, type checking
     for this on earlier Python version might not work as expected.
     """
+
     @abstractmethod
     def read(self, size: int) -> bytes:
         """Read at most size bytes, returned as bytes."""
@@ -2903,7 +2905,7 @@ cdef class MessageHandler:
         """Handle disconnected device messages.
 
         This is called when the given device has been disconnected and
-        is no longer usable for output.  As per the `ALC_EXT_disconnect`
+        is no longer usable for output.  As per `ALC_EXT_disconnect`
         specification, disconnected devices remain valid, however all
         playing sources are automatically stopped, any sources that are
         attempted to play will immediately stop, and new contexts may
@@ -2914,7 +2916,7 @@ cdef class MessageHandler:
         Connection status is checked during `Context.update` calls, so
         method must be called regularly to be notified when a device is
         disconnected.  This method may not be called if the device lacks
-        support for the `ALC_EXT_disconnect` extension.
+        support for `ALC_EXT_disconnect` extension.
         """
 
     def source_stopped(self, source: Source) -> None:
