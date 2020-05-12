@@ -1304,7 +1304,7 @@ cdef class Source:
     def offset(self) -> int:
         """Source offset in sample frames.
 
-        For streaming sources, this will be 
+        For streaming sources, this will be
         based on decoder's read position.
         """
         return self.impl.get_sample_offset()
