@@ -36,6 +36,7 @@ and z is for back-forth.
 For example, this will set the source above you:
 
 .. code-block:: python
+
    src.position = 0, 1, 0
 
 *Note*: for this too work, you have to have HRTF enabled.  You can check that
@@ -45,6 +46,7 @@ You can as well use a function to move the source automatically by writing
 a function that generate positions.  A simple example is circular motion.
 
 .. code-block:: python
+
    from itertools import takewhile, count
    def rotate(t):
        return sin(t), 0, -cos(t)
@@ -62,6 +64,7 @@ Modifying :py:attr:`pitch` changes the playing speed, effectively changing
 pitch.  Pitch can be any positive number.
 
 .. code-block:: python
+
    src.pitch = 7  # quite high pitch
    src.pitch = 0.4  # low pitch
 
@@ -73,6 +76,7 @@ air absorption. Higher values simulate foggy air and lower values simulate
 drier air.
 
 .. code-block:: python
+
    src.air_absorption_factor = 9  # very high humidity
    src.air_absorption_factor = 0  # by default: dry air
 
