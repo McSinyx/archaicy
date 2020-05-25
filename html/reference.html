@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Design Principles" href="design.html" />
-    <link rel="prev" title="Play an audio" href="tutorial/play-audio.html" />
+    <link rel="prev" title="Source manipulation" href="tutorial/source.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -90,7 +90,7 @@
     <ul>
         <li>
           &larr;
-          <a href="tutorial/play-audio.html" title="Previous document">Play an audio</a>
+          <a href="tutorial/source.html" title="Previous document">Source manipulation</a>
         </li>
         <li>
           <a href="design.html" title="Next document">Design Principles</a>
@@ -1918,14 +1918,14 @@ the end of the audio has been reached.</p>
 <h2>File I/O Interface<a class="headerlink" href="#file-i-o-interface" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="palace.current_fileio">
-<code class="sig-prename descclassname">palace.</code><code class="sig-name descname">current_fileio</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Callable<span class="p">[</span><span class="p">[</span>str<span class="p">]</span><span class="p">, </span><a class="reference internal" href="#palace.FileIO" title="palace.FileIO">palace.FileIO</a><span class="p">]</span><span class="p">]</span><a class="headerlink" href="#palace.current_fileio" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">palace.</code><code class="sig-name descname">current_fileio</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Callable<span class="p">[</span>str<span class="p">, </span><a class="reference internal" href="#palace.FileIO" title="palace.FileIO">palace.FileIO</a><span class="p">]</span><span class="p">]</span><a class="headerlink" href="#palace.current_fileio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the file I/O factory currently in used by audio decoders.</p>
 <p>If the default is being used, return <cite>None</cite>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="palace.use_fileio">
-<code class="sig-prename descclassname">palace.</code><code class="sig-name descname">use_fileio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Callable<span class="p">[</span><span class="p">[</span>str<span class="p">]</span><span class="p">, </span>FileIO<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">buffer_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">8192</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#palace.use_fileio" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">palace.</code><code class="sig-name descname">use_fileio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Callable<span class="p">[</span>str<span class="p">, </span>FileIO<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">buffer_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">8192</span></em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#palace.use_fileio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the file I/O factory instance to be used by audio decoders.</p>
 <p>If <cite>factory=None</cite> is provided, revert to the default.</p>
 </dd></dl>
@@ -1983,7 +1983,7 @@ or 2 (move relative to end of file).</p></li>
     <ul>
         <li>
           &larr;
-          <a href="tutorial/play-audio.html" title="Previous document">Play an audio</a>
+          <a href="tutorial/source.html" title="Previous document">Source manipulation</a>
         </li>
         <li>
           <a href="design.html" title="Next document">Design Principles</a>
