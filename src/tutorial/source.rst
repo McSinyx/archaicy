@@ -28,9 +28,13 @@ but first, we have to enable spatialization via :py:attr:`Source.spatialize`.
 
 Now, we can set the position of the source in this virtual 3D space.
 The position is a 3-tuple indicating the coordinate of the source.
-: x is for left-right, y is for up-down,
-and z is for back-forth.
-For example, this will set the source above you:
+The axes are aligned according to the normal coordinate system:
+
+- x axis goes from left to right
+- y axis goes from below to above
+- z axis goes from front to back
+
+For example, this will set the source above the listener:
 
 .. code-block:: python
 
