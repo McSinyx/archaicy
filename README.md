@@ -6,6 +6,18 @@ To quote alure's README,
 > such as file loading and decoding, buffer caching, background streaming,
 > and source management for virtually unlimited sound source handles.
 
+Table of Contents
+=================
+    
+  * [Features](#features)
+    * [Installation](#installation)
+       * [Prerequisites](#prerequisites)
+       * [Via PyPI](#via-pypi)
+       * [From source](#from-source)
+    * [Usage](#usage)
+    * [Contributing](#contributing)
+    * [License and Credits](#license-and-credits)
+      
 ## Features
 In some sense, what palace aimes to be to [OpenAL Soft] is what [ModernGL]
 is to OpenGL (except that all the heavy-lifting are taken are by alure):
