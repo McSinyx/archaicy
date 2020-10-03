@@ -31,7 +31,7 @@ templates_path = ['templates']
 exclude_patterns = []
 
 # Options for HTML output
-html_theme = "sphinx_rtd_theme"
+html_theme = 'sphinx_rtd_theme'
 html_theme_options = {'fixed_sidebar': True, 'show_relbars': True}
 
 html_sidebars = {
