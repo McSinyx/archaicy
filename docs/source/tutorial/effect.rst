@@ -20,12 +20,11 @@ Creating a reverb effect can be as simple as:
 
    source.sends[0].effect = ReverbEffect()
 
-
 :py:attr:`Source.sends` is a collection of send path signals, each of which
 contains `effects` and `filter` that describes it.  Here we are only concerned
 about the former.
 
-The above code would yield a "generic" reverb effect by default.
+The above code would yield a *generic* reverb effect by default.
 There are several other presets that you can use, which are listed
 by :py:data:`reverb_preset_names`.  To use these preset, you can simply provide
 the preset effect name as the first parameter for the constructor.  For example,
@@ -61,4 +60,11 @@ phase, depth, feedback, and delay.
    source.sends[0].effect = ChorusEffect('sine', 20, 0.4, 0.5, 0.008)
 
 For the constraints of these parameters, please refer to the documentation.
+
+Destroy the effects
+-------------------
+
+Like other objects in palace, effects must be destroyed after it has its jobs
+done with `__exit__()`.  If you use `with` syntax (you should) as mentioned in
+previous tutorials, the method will be called when you exit the `with` block.
 
