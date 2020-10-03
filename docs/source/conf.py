@@ -18,7 +18,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     "sphinx_rtd_theme",
-]
+    ]
 napoleon_google_docstring = False
 default_role = 'py:obj'
 
