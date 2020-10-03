@@ -14,7 +14,11 @@ release = '0.2.1'
 # They can be extensions coming with Sphinx (named 'sphinx.ext.*')
 # or your custom ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.githubpages', 'sphinx.ext.napoleon']
+    'sphinx.ext.autodoc',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    "sphinx_rtd_theme",
+]
 napoleon_google_docstring = False
 default_role = 'py:obj'
 
@@ -27,7 +31,7 @@ templates_path = ['templates']
 exclude_patterns = []
 
 # Options for HTML output
-html_theme = 'alabaster'
+html_theme = "sphinx_rtd_theme"
 html_theme_options = {'fixed_sidebar': True, 'show_relbars': True}
 
 html_sidebars = {
