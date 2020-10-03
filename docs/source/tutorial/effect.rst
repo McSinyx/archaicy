@@ -1,4 +1,4 @@
-Adding an effect
+Adding an Effect
 ================
 
 .. currentmodule:: palace
@@ -61,7 +61,7 @@ phase, depth, feedback, and delay.
 
 For the constraints of these parameters, please refer to the documentation.
 
-Destroy the effects
+Destroy the Effects
 -------------------
 
 Like other objects in palace, effects must be destroyed after it has its jobs
