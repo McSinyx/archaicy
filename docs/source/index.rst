@@ -36,3 +36,15 @@ Indices and Tables
 .. _HRTF: https://en.wikipedia.org/wiki/Head-related_transfer_function
 .. _alure: https://github.com/kcat/alure
 .. _Cython: https://cython.org
+
+
+.. toctree::
+   :caption: Quick Navigation
+   :maxdepth: 1
+
+   Python Package Index <https://pypi.org/project/palace/>
+   Travis CI Build <https://travis-ci.com/github/McSinyx/palace>
+   AppVeyor Build <https://ci.appveyor.com/project/McSinyx/palace>
+   GitHub Repository <https://github.com/McSinyx/palace>
+   Matrix Chat Room <https://matrix.to/#/#palace-dev:matrix.org>
+
