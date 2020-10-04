@@ -15,7 +15,6 @@ release = '0.2.1'
 # or your custom ones.
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.githubpages', 'sphinx.ext.napoleon']
-
 napoleon_google_docstring = False
 default_role = 'py:obj'
 
