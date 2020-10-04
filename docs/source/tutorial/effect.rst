@@ -18,7 +18,8 @@ Creating a reverb effect can be as simple as:
 
 .. code-block:: python
 
-   source.sends[0].effect = ReverbEffect()
+   with ReverbEffect() as effect:
+       source.sends[0].effect = effect
 
 :py:attr:`Source.sends` is a collection of send path signals, each of which
 contains `effects` and `filter` that describes it.  Here we are only concerned
@@ -32,7 +33,8 @@ to use `PIPE_LARGE` preset effect, you can initialize the effect like below:
 
 .. code-block:: python
 
-   effect = ReverbEffect('PIPE_LARGE')
+   with ReverbEffect('PIPE_LARGE') as effect:
+       source.sends[0].effect = effect
 
 These effects can be modified via their attributes.
 
@@ -57,14 +59,8 @@ phase, depth, feedback, and delay.
 
 .. code-block:: python
 
-   source.sends[0].effect = ChorusEffect('sine', 20, 0.4, 0.5, 0.008)
+   with ChorusEffect('sine', 20, 0.4, 0.5, 0.008) as effect:
+       source.sends[0].effect = effect
 
 For the constraints of these parameters, please refer to the documentation.
-
-Destroy the Effects
--------------------
-
-Like other objects in palace, effects must be destroyed after it has its jobs
-done with `__exit__()`.  If you use `with` syntax (you should) as mentioned in
-previous tutorials, the method will be called when you exit the `with` block.
 
