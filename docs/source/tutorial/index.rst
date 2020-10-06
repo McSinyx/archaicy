@@ -11,6 +11,5 @@ This tutorial will guide you on:
    source
    effect
 .. comment these to add later
-   Adding effects
    Customize decoder
    Generate sounds
